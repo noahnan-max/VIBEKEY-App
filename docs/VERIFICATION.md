@@ -13,6 +13,8 @@ Scope: AU05-only source based on VIBEKEY 0.15.3, published independently of the 
 | Native rendering | PASS, 34 snapshots | Production AU05 views rendered with isolated example configuration in light/dark appearances and regular/minimum desktop sizes. No AU05 capture, device writes or host actions. |
 | README image inspection | PASS | Key editor in both appearances and radial settings were visually inspected. All use original schematic artwork. |
 | Source secret scan | PASS | Gitleaks scan found no secret findings in the prepared source tree. This is a scoped scan, not an independent security certification. |
+| Public GitHub readback | PASS | The repository is anonymously readable, GitHub recognizes MIT, and both README files, the license and all three screenshot downloads match local hashes. |
+| Fresh GitHub clone build | PASS | A new shallow clone of the published source builds the `.app` and passes signature-integrity verification without the original working tree's generated files. |
 | Public-source boundary | PASS | No private keyboard implementation, retired speech/IME source, runtime data, device backup, signing material, manufacturer binary or extracted product image is included. |
 | SwiftPM on the local CLT installation | BLOCKED by platform discovery; XCTest NOT_RUN | This Command Line Tools installation cannot resolve `xcrun --show-sdk-platform-path`. The supported direct-`swiftc` build and isolated checks passed instead. XCTest on a full Xcode toolchain remains separate. |
 | Physical AU05 triggers and cross-app execution of this public build | NOT_RUN | This publication did not take ownership of or write to the in-use device. |
