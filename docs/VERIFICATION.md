@@ -1,4 +1,27 @@
-# Initial publication verification / 初次开源验证
+# Verification / 验证记录
+
+## 0.16.0 — login launch and quiet signed updates
+
+The following checks cover the new production code and isolated updater fixtures. They do not establish Apple notarization, another Mac's permissions, or a physical reboot/login.
+
+| Check | Result | What it establishes |
+| --- | --- | --- |
+| Release build and bundle integrity | PASS | Apple-silicon 0.16.0 build 1600, including the nested Sparkle components, passes deep/strict code-signature verification. The local publisher identity is not an Apple Developer ID notarization. |
+| Login state and launch-event checks | PASS, 11 checks | Enabled/disabled/error/approval state is read back without optimistic success; both native login-event forms select background launch. These fixtures do not create real login entries. |
+| Installed login registration | PASS, scoped | VIBEKEY is visible in macOS Open at Login and the installed App reads its native login status as enabled. The actual in-App switch interaction was not run because the UI automation tool retained the previous App identity. |
+| Installed background cold launch | PASS | The installed 0.16.0 App runs from Applications as an accessory with zero ordinary windows, and existing shared configuration hashes are unchanged. This uses the explicit background launch path; a real reboot/login is NOT_RUN. |
+| Quiet background update discovery | PASS, isolated real App | A signed loopback feed produces an in-App unread indicator and inline release notes without an update alert. The server receives zero archive requests before explicit consent. |
+| Confirmed replacement and relaunch | PASS, isolated real App | The production update Store downloads a signed version 2 after consent, invokes its preparation callback before replacement, and relaunches the actual replacement at version 2. No production configuration or hardware access. |
+| Invalid archive signature | PASS, isolated real App | Sparkle rejects the archive, version 1 remains installed, and replacement/preparation does not occur. |
+| Native rendering and artwork | PASS, 34 snapshots | Light/dark production views load the complete original AU05 3D render. The signed App contains the expected artwork bytes; there are no device writes or host actions in the render probe. |
+| Existing isolated regressions | PASS | 22 hardware suites, 39 battery checks, 50 Desktop metadata checks and 38 Python bridge/recovery tests. |
+| Updated source boundary scan | PASS with one classified public-key finding | Gitleaks flags the intended Ed25519 verification key as a generic API key. It matches the publisher tool's public-key output and the installed App; no sensitive finding remains. The third-party license is preserved verbatim. |
+| Updated public feed and download | PENDING | The production signing tool is waiting for the publisher's local Keychain authorization. Version 0.16.0 and its signed feed have not yet been published. |
+| New public-identity Accessibility permission | PENDING on publisher's Mac | The installed App reports that permission has not been granted. Cross-app macros and input posting are not accepted by the checks above. |
+
+中文：已验证静默提醒、确认后替换重开、错误签名拒绝，以及本机登录项开启和后台无主窗口启动。真实重启登录、App 内开关点击、辅助功能重新授权、生产更新包发布、其他 Mac 安装与 Apple 公证仍保留各自的未运行或待完成状态。
+
+## Initial publication / 初次开源
 
 Scope: AU05-only source based on VIBEKEY 0.15.3, published independently of the private development history. This record describes checks of the public source, not acceptance of every physical-device or target-application behavior.
 

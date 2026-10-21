@@ -1,0 +1,32 @@
+{
+  "width": 320,
+  "height": 1000,
+  "cropLeft": 140,
+  "sourceModel": "VIBEKEY-AU05-film-C.blend, revision B, frame 1",
+  "controls": {
+    "knob.press": {
+      "x": 143.305,
+      "y": 343.541,
+      "width": 205.005,
+      "height": 215.187
+    },
+    "key.0": {
+      "x": 146.341,
+      "y": 539.694,
+      "width": 144.898,
+      "height": 142.902
+    },
+    "key.1": {
+      "x": 146.341,
+      "y": 681.475,
+      "width": 144.898,
+      "height": 142.902
+    },
+    "key.2": {
+      "x": 146.341,
+      "y": 823.256,
+      "width": 144.898,
+      "height": 142.902
+    }
+  }
+}

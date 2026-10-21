@@ -17,6 +17,7 @@ struct VibekeyWorkspace: View {
     @ObservedObject var agentSignals: AgentSignalStore
     var onboard: AU05OnboardStore?
     var batteryNotifications: BatteryNotificationController?
+    var updateAvailable = false
     @State private var destination: VibekeyDestination
     @State private var au05Section: AU05ConfigurationSection
 
@@ -24,11 +25,12 @@ struct VibekeyWorkspace: View {
          radialStore: RadialMenuStore, radial: RadialMenuController, lighting: SmartLightingController, agentSignals: AgentSignalStore,
          onboard: AU05OnboardStore? = nil, initialDestination: VibekeyDestination = .devices,
          initialAU05Section: AU05ConfigurationSection = .keys,
-         batteryNotifications: BatteryNotificationController? = nil) {
+         batteryNotifications: BatteryNotificationController? = nil, updateAvailable: Bool = false) {
         self.device = device; self.workflows = workflows; self.settings = settings
         self.radialStore = radialStore; self.radial = radial; self.lighting = lighting; self.agentSignals = agentSignals
         self.onboard = onboard
         self.batteryNotifications = batteryNotifications
+        self.updateAvailable = updateAvailable
         _destination = State(initialValue: initialDestination)
         _au05Section = State(initialValue: initialAU05Section)
     }
@@ -78,7 +80,7 @@ struct VibekeyWorkspace: View {
             Rectangle().fill(VIFLOWTheme.border).frame(height: 1).padding(.horizontal, 16)
             VStack(spacing: 4) {
                 navigationRow("开始使用", symbol: "checklist", selected: destination == .setup, identifier: "vibekey.navigation.setup") { destination = .setup }
-                OpenSettingsButton()
+                OpenSettingsButton(hasUpdate: updateAvailable)
             }.padding(.horizontal, 12).padding(.vertical, 12)
         }.frame(width: VIFLOWTheme.sidebarWidth).background(VIFLOWTheme.surface)
     }

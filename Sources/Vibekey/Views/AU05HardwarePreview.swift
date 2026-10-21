@@ -1,46 +1,52 @@
 import SwiftUI
 
-/// Hit targets follow the AU05 product render's 188 × 692 coordinate space.
+/// Hit targets follow the complete 3D render's projected 320 × 1000 canvas.
 /// Selecting a part opens its editor; this view never executes a hardware action.
 struct AU05HardwarePreview: View {
     var selectedTriggerID: String? = nil
     var onSelect: (String) -> Void
-    private let scale: CGFloat = 390 / 692
+    private let scale: CGFloat = 390 / AU05ArtworkLayout.size.height
 
     var body: some View {
         ZStack(alignment:.topLeading) {
             DeviceProductArtwork(product:.au05)
-                .frame(width:188 * scale,height:390).position(x:92,y:195)
-            target("knob.press",title:"旋钮 · 按下",size:164 * scale,circular:true)
-                .position(x:92,y:210 * scale)
-            target("key.0",title:"上键",size:118 * scale)
-                .position(x:92,y:370 * scale)
-            target("key.1",title:"中键",size:118 * scale)
-                .position(x:92,y:484 * scale)
-            target("key.2",title:"下键",size:118 * scale)
-                .position(x:92,y:598 * scale)
+                .frame(width:AU05ArtworkLayout.size.width * scale,height:390).position(x:92,y:195)
+            target("knob.press",title:"旋钮 · 按下",part:AU05ArtworkLayout.knob,circular:true)
+                .position(project(AU05ArtworkLayout.knob.center))
+            target("key.0",title:"上键",part:AU05ArtworkLayout.keys[0])
+                .position(project(AU05ArtworkLayout.keys[0].center))
+            target("key.1",title:"中键",part:AU05ArtworkLayout.keys[1])
+                .position(project(AU05ArtworkLayout.keys[1].center))
+            target("key.2",title:"下键",part:AU05ArtworkLayout.keys[2])
+                .position(project(AU05ArtworkLayout.keys[2].center))
             rotation("knob.left",title:"左转",symbol:"arrow.counterclockwise")
-                .position(x:17,y:210 * scale)
+                .position(x:17,y:AU05ArtworkLayout.knob.center.y * scale)
             rotation("knob.right",title:"右转",symbol:"arrow.clockwise")
-                .position(x:167,y:210 * scale)
+                .position(x:167,y:AU05ArtworkLayout.knob.center.y * scale)
         }.frame(width:184,height:390)
             .accessibilityElement(children:.contain)
             .accessibilityLabel("AU05 按键位置")
             .accessibilityIdentifier("vibekey.device.hardware-map")
     }
 
-    private func target(_ id:String,title:String,size:CGFloat,circular:Bool=false)->some View {
+    private func project(_ point:CGPoint)->CGPoint {
+        CGPoint(x:92 + (point.x - AU05ArtworkLayout.size.width / 2) * scale,y:point.y * scale)
+    }
+
+    private func target(_ id:String,title:String,part:AU05ArtworkLayout.Part,circular:Bool=false)->some View {
         let selected=selectedTriggerID == id
+        let width=part.size.width * scale, height=part.size.height * scale
+        let radius=circular ? min(width,height)/2 : 6
         return Button {onSelect(id)} label: {
             ZStack {
-                RoundedRectangle(cornerRadius:circular ? size/2 : 6)
+                RoundedRectangle(cornerRadius:radius)
                     .fill(selected ? VIFLOWTheme.accent.opacity(0.10) : Color.clear)
-                    .overlay(RoundedRectangle(cornerRadius:circular ? size/2 : 6)
+                    .overlay(RoundedRectangle(cornerRadius:radius)
                         .stroke(selected ? VIFLOWTheme.accent : Color.clear,lineWidth:2.5)
                         .allowsHitTesting(false))
                 if circular {Text("按下").font(VIFLOWTheme.caption).foregroundColor(selected ? VIFLOWTheme.accent : Color(white: 0.75))}
-            }.frame(width:size,height:size)
-                .contentShape(RoundedRectangle(cornerRadius:circular ? size/2 : 6))
+            }.frame(width:width,height:height)
+                .contentShape(RoundedRectangle(cornerRadius:radius))
         }.buttonStyle(.plain).help("选择\(title)的配置")
             .accessibilityLabel(title).accessibilityValue(selected ? "已选中":"未选中")
             .accessibilityIdentifier("hardware."+id)

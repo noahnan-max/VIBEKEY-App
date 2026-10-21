@@ -1,0 +1,19 @@
+VIBEKEY 0.16.0
+
+主要更新
+• App 设置中新增“登录时启动 VIBEKEY”开关；自动启动仅驻留菜单栏，不弹出主窗口。
+• 新增自动检查更新与手动检查。后台发现新版时，只在菜单栏和设置入口显示提示，不抢焦点。
+• 可在 App 内先查看新版本和更新内容，再主动选择更新；确认后由 App 下载、校验签名、替换并重新启动。
+• 安装更新前保存配置并恢复借用的灯光，保留现有按键、宏和轮盘配置。
+• 公开版保留完整 AU05 3D 设备外观与对应按键热区。
+
+What's new
+• A login-launch switch with a menu-bar-only startup.
+• Quiet automatic update checks and in-app update badges.
+• Release notes before opt-in download, signed verification and App replacement.
+• Configuration preservation and graceful shutdown before an update.
+• Complete AU05 3D artwork with aligned control regions.
+
+此版本为 AU05 公开版，不包含私人 Keychron 功能。
+当前安装包未做 Apple Developer ID 公证；首次在其他 Mac 打开时，可能需要由用户在系统安全设置中允许。
+首次从 0.15.3 升级需要下载安装此版本；之后可使用 App 内更新。

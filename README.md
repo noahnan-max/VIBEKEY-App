@@ -15,13 +15,13 @@ VIBEKEY turns the AU05's three keys and rotary knob into a small, configurable w
 
 The app is written in **SwiftUI and AppKit**, with direct IOKit HID communication and local configuration storage. Core features need no online account, subscription, API key, or cloud backend.
 
-This repository contains the **AU05-only, open-source hardware controller**, based on version **0.15.3**. The interface is currently in Simplified Chinese; both English and Chinese documentation are provided. Speech recognition, dictation, language models and an input-method engine are outside this version's scope.
+This repository contains the **AU05-only, open-source hardware controller**, based on version **0.16.0**. The interface is currently in Simplified Chinese; both English and Chinese documentation are provided. Speech recognition, dictation, language models and an input-method engine are outside this version's scope.
 
 ## See the app
 
 ![AU05 key editor in the light appearance](docs/images/keys-light.png)
 
-*Native app rendering with isolated example settings. Device artwork is an original schematic. Screenshots show the interface, not a physical-device or cross-app execution test.*
+*Native app rendering with isolated example settings. The complete AU05 device artwork is rendered from the project's revision B 3D model, retaining the enclosure, dial, microphone vents and all three keys. Screenshots show the interface, not a physical-device or cross-app execution test.*
 
 <details>
 <summary>Radial menu and dark appearance</summary>
@@ -47,6 +47,8 @@ This repository contains the **AU05-only, open-source hardware controller**, bas
 | Lighting | Read supported firmware light modes and brightness; optionally follow fresh Agent state with bounded writes and restoration. |
 | Battery | Show charge percentage, charging status and sample freshness. Poll about every 30 seconds while the connection is ready and idle. |
 | Menu-bar operation | Close the main window and keep Mac workflows running. Use the menu's Quit command for the normal save/restore shutdown path. |
+| Login launch | Enable or disable launch at login inside App settings; login launches stay in the menu bar. |
+| Signed updates | Quiet automatic checks, unread update badges and inline release notes; download and replacement require user action. |
 | Appearance | Follow the system appearance or select light/dark mode, using the app's violet visual system. |
 
 ### Practical examples
@@ -88,7 +90,7 @@ cd VIBEKEY-App
 open dist/VIBEKEY.app
 ```
 
-The script builds the core, diagnostic executable and GUI, creates an actual `.app` bundle, and verifies its local development signature. It does not install a driver, download a model, install Agent hooks, or replace an App in `/Applications`.
+The first build downloads the pinned official Sparkle 2.10.0 distribution and verifies its SHA-256. The script builds the core, diagnostic executable and GUI, creates an actual `.app` bundle, and verifies its local development signature. It does not install a driver, download a model, install Agent hooks, or replace an App in `/Applications`.
 
 The default signature is **ad hoc for local development**. This is not an Apple-notarized release or a promise of warning-free installation on another Mac. Rebuilding an ad-hoc-signed application can require renewed Accessibility approval. To use an identity already configured on your own Mac:
 
@@ -121,6 +123,14 @@ The included bridge understands supported **Codex** and **Claude Code** hook met
 - Hook loading, trust review and compatibility depend on the installed Agent version. The bridge prints a merge plan and does not silently install or replace hooks.
 
 Read [Agent integration](docs/AGENT_INTEGRATION.md) before connecting a live Agent.
+
+## Updates and login launch
+
+App settings contains **登录时启动 VIBEKEY** (Launch at login), an on/off switch backed by macOS ServiceManagement. A login launch stays in the menu bar; deliberately opening the App or choosing its menu entry opens the main window.
+
+Update checks run about once a day and can be turned off. Background discovery stays quiet: the menu-bar icon and App Settings entry show an unread indicator. Manual checks report their result in settings. Open the update details to read the release notes, then choose **更新并重新启动…** (Update and relaunch) to start the confirmation/download/install flow. Update archives and the feed use Ed25519 signatures; automatic download/installation and system profiling are disabled.
+
+The first upgrade from 0.15.3 requires installing 0.16.0 once, because the earlier version did not include an updater. See [Update publishing](docs/UPDATES.md) for the version, release-note and signing process.
 
 ## Privacy and local data
 

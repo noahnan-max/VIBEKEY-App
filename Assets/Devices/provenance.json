@@ -1,0 +1,13 @@
+{
+  "artwork": "au05-3d.png",
+  "type": "project-authored Blender 3D render",
+  "model": "AU05 revision B / film C, frame 1",
+  "renderSHA256": "47132ea990eac954a4d4bb61990fa7911035aa8fcb6a0119d9470ea0597ddb99",
+  "width": 320,
+  "height": 1000,
+  "fullDeviceIncluded": true,
+  "simplifiedSubstitute": false,
+  "manufacturerPhotographIncluded": false,
+  "hitRegions": "au05-3d-projection.json",
+  "appearanceDimensions": "Public reference proportions; not calibrated engineering CAD"
+}

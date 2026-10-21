@@ -6,7 +6,7 @@
 
 ### Build and launch
 
-Use an Apple silicon Mac with macOS 13.3+, Swift 5.8+ and Apple's macOS SDK. Install Command Line Tools using `xcode-select --install` if they are not already installed, then follow the system installer. The build has no third-party Swift package dependency.
+Use an Apple silicon Mac with macOS 13.3+, Swift 5.8+ and Apple's macOS SDK. Install Command Line Tools using `xcode-select --install` if they are not already installed, then follow the system installer. The first build downloads and checksum-verifies Sparkle 2.10.0 from its official GitHub release.
 
 ```sh
 ./script/build_and_run.sh --build-only
@@ -59,7 +59,7 @@ The diagnostic target contains explicit device-access modes, including a write/r
 
 ### 构建与启动
 
-使用 Apple silicon Mac、macOS 13.3+、Swift 5.8+ 和 Apple macOS SDK。尚未安装开发工具时，可执行 `xcode-select --install`，按系统安装程序完成。项目没有第三方 Swift 包依赖。
+使用 Apple silicon Mac、macOS 13.3+、Swift 5.8+ 和 Apple macOS SDK。尚未安装开发工具时，可执行 `xcode-select --install`，按系统安装程序完成。首次构建会从官方 GitHub release 下载并校验 Sparkle 2.10.0。
 
 ```sh
 ./script/build_and_run.sh --build-only

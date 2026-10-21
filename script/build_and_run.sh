@@ -25,41 +25,32 @@ for VIBEKEY_PID in $(pgrep -x Vibekey || true); do
   esac
 done
 bash script/build_core.sh
+VIBEKEY_SPARKLE_DIR="$(python3 script/ensure_sparkle.py)"
 VIBEKEY_SDK="$(xcrun --sdk macosx --show-sdk-path)"
 VIBEKEY_FILES=()
 while IFS= read -r path; do VIBEKEY_FILES+=("$path"); done < <(find Sources/Vibekey -name '*.swift' -type f | sort)
 swiftc -swift-version 5 -sdk "$VIBEKEY_SDK" -target arm64-apple-macosx13.3 \
   -module-cache-path .build/manual/module-cache -module-name Vibekey \
-  -I .build/manual -L .build/manual -lVibekeyCore "${VIBEKEY_FILES[@]}" -o .build/manual/Vibekey
+  -I .build/manual -L .build/manual -lVibekeyCore -F "$VIBEKEY_SPARKLE_DIR" -framework Sparkle \
+  -Xlinker -rpath -Xlinker @executable_path/../Frameworks "${VIBEKEY_FILES[@]}" -o .build/manual/Vibekey
 mkdir -p "$ROOT_DIR/dist"
 VIBEKEY_STAGE_ROOT="$(mktemp -d "$ROOT_DIR/dist/.VIBEKEY-build.XXXXXX")"
 VIBEKEY_STAGE="$VIBEKEY_STAGE_ROOT/VIBEKEY.app"
-mkdir -p "$VIBEKEY_STAGE/Contents/MacOS" "$VIBEKEY_STAGE/Contents/Resources/AgentSignals"
+mkdir -p "$VIBEKEY_STAGE/Contents/MacOS" "$VIBEKEY_STAGE/Contents/Resources/AgentSignals" "$VIBEKEY_STAGE/Contents/Frameworks"
 cp .build/manual/Vibekey "$VIBEKEY_STAGE/Contents/MacOS/Vibekey"
 cp Assets/Brand/VIBEKEY-symbol.png Assets/Brand/VIBEKEY.icns LICENSE THIRD_PARTY_NOTICES.md "$VIBEKEY_STAGE/Contents/Resources/"
 cp script/agent_signal_bridge.py "$VIBEKEY_STAGE/Contents/Resources/AgentSignals/"
-cat > "$VIBEKEY_STAGE/Contents/Info.plist" <<'PLIST'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0"><dict>
-<key>CFBundleExecutable</key><string>Vibekey</string>
-<key>CFBundleIdentifier</key><string>io.github.noahnan-max.VIBEKEY</string>
-<key>CFBundleName</key><string>VIBEKEY</string>
-<key>CFBundleDisplayName</key><string>VIBEKEY</string>
-<key>CFBundleIconFile</key><string>VIBEKEY.icns</string>
-<key>CFBundlePackageType</key><string>APPL</string>
-<key>CFBundleShortVersionString</key><string>0.15.3</string>
-<key>CFBundleVersion</key><string>1</string>
-<key>LSMinimumSystemVersion</key><string>13.3</string>
-<key>NSPrincipalClass</key><string>NSApplication</string>
-<key>NSAppleEventsUsageDescription</key><string>VIBEKEY controls local apps through the shortcuts and workflows you configure.</string>
-</dict></plist>
-PLIST
+test -s Assets/Devices/au05-3d.png
+mkdir -p "$VIBEKEY_STAGE/Contents/Resources/Devices"
+cp Assets/Devices/au05-3d.png "$VIBEKEY_STAGE/Contents/Resources/Devices/"
+ditto "$VIBEKEY_SPARKLE_DIR/Sparkle.framework" "$VIBEKEY_STAGE/Contents/Frameworks/Sparkle.framework"
+cp "$VIBEKEY_SPARKLE_DIR/LICENSE" "$VIBEKEY_STAGE/Contents/Resources/Sparkle-LICENSE.txt"
+python3 script/bundle_info.py "$VIBEKEY_STAGE/Contents/Info.plist"
 if [ -n "${VIBEKEY_SIGNING_IDENTITY:-}" ]; then
-  codesign --force --sign "$VIBEKEY_SIGNING_IDENTITY" "$VIBEKEY_STAGE"
+  python3 script/sign_bundle.py "$VIBEKEY_STAGE" --identity "$VIBEKEY_SIGNING_IDENTITY"
 else
   printf '%s\n' 'Signing for local development (ad hoc; not Apple notarized).'
-  codesign --force --sign - "$VIBEKEY_STAGE"
+  python3 script/sign_bundle.py "$VIBEKEY_STAGE"
 fi
 codesign --verify --deep --strict "$VIBEKEY_STAGE"
 if [ -e "$VIBEKEY_APP_BUNDLE" ]; then

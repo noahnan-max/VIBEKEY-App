@@ -7,6 +7,8 @@ import UserNotifications
 @main @MainActor struct VibekeyApp:App {
     @NSApplicationDelegateAdaptor(VibekeyDelegate.self) private var delegate
     private let runtime=VibekeyRuntime.shared
+    @StateObject private var launch=VibekeyRuntime.shared.launch
+    @StateObject private var updates=VibekeyRuntime.shared.updates
     @StateObject private var settings=VibekeyRuntime.shared.settings
     @StateObject private var device=VibekeyRuntime.shared.device
     var body:some Scene {
@@ -15,34 +17,43 @@ import UserNotifications
                 .background(MainWindowMarker().frame(width:0,height:0).allowsHitTesting(false))
                 .background(MainWindowActions {delegate.reopenMain=$0}.frame(width:0,height:0).allowsHitTesting(false))
                 .onAppear {
-                    if runtime.probe || CommandLine.arguments.contains("--background") {
+                    if runtime.probe || launch.background {
                         NSApp.windows.filter{$0.identifier?.rawValue == "vibekey.main"}.forEach{$0.orderOut(nil)}
                     }
                 }
         }.defaultSize(width:1160,height:820)
             .commands {
                 CommandGroup(replacing:.newItem) {}
+                CommandGroup(after:.appInfo) { Button("检查更新…") {SettingsPresentation.show();updates.checkNow()}.disabled(!updates.canCheck) }
                 CommandMenu("设备") {
                     Button("刷新设备状态") {runtime.device.refresh()}.keyboardShortcut("r",modifiers:.command).disabled(settings.suspended)
                     Button("取消当前宏") {runtime.workflows.cancel();runtime.radial.cancel()}
                 }
             }
-        Settings {HardwareSettingsView(settings:settings).disabled(settings.suspended)}
+        Settings {HardwareSettingsView(settings:settings,updates:updates).disabled(settings.suspended)}
         MenuBarExtra {
+            Group {
             Text("VIBEKEY · 设备控制")
             Text("关窗后继续运行；从此菜单退出才停止。")
             Text(device.snapshot.batteryPercent.map { "设备电量 \($0)%" + (device.batteryIsFresh(at: Date()) ? "" : " · 非实时") } ?? "电量未读取")
+            }
             if let warning = device.batteryWarning(at: Date()) { Text(warning.message) }
             Button("打开我的设备") {delegate.showMain()}
             Divider()
             Button("取消当前宏") {runtime.workflows.cancel();runtime.radial.cancel()}
-            Button("设置…") {SettingsPresentation.show()}
+            Button(updates.hasUpdateBadge ? "App 设置… · 有新版本" : "设置…") {SettingsPresentation.show()}
+            Button("检查更新…") {SettingsPresentation.show();updates.checkNow()}.disabled(!updates.canCheck)
             Divider();Button("退出 VIBEKEY") {NSApp.terminate(nil)}
-        } label:{Image(nsImage:VibekeyBrand.menuBarIdle).accessibilityLabel("VIBEKEY").help("VIBEKEY · 设备控制")}
+        } label:{
+            ZStack(alignment:.topTrailing) {
+                Image(nsImage:VibekeyBrand.menuBarIdle)
+                if updates.hasUpdateBadge { Circle().fill(Color(nsColor:.systemRed)).frame(width:5,height:5).offset(x:2,y:-2) }
+            }.accessibilityLabel(updates.hasUpdateBadge ? "VIBEKEY，有新版本" : "VIBEKEY").help("VIBEKEY · 设备控制")
+        }
         .menuBarExtraStyle(.menu)
     }
     private var workspace:some View {
-        VibekeyWorkspace(device:runtime.device,workflows:runtime.workflows,settings:runtime.settings,radialStore:runtime.radialStore,radial:runtime.radial,lighting:runtime.lighting,agentSignals:runtime.agentSignals,onboard:runtime.onboard,batteryNotifications:runtime.batteryNotifications)
+        VibekeyWorkspace(device:runtime.device,workflows:runtime.workflows,settings:runtime.settings,radialStore:runtime.radialStore,radial:runtime.radial,lighting:runtime.lighting,agentSignals:runtime.agentSignals,onboard:runtime.onboard,batteryNotifications:runtime.batteryNotifications,updateAvailable:updates.hasUpdateBadge)
     }
 }
 
@@ -54,6 +65,8 @@ import UserNotifications
     let device:DeviceStore
     let workflows:WorkflowStore
     let settings:HardwareSettings
+    let launch=AppLaunchState()
+    let updates:AppUpdateStore
     let radialStore:RadialMenuStore
     let radial:RadialMenuController
     let lighting:SmartLightingController
@@ -62,6 +75,7 @@ import UserNotifications
     let batteryNotifications:BatteryNotificationController?
     private init() {
         probe=CommandLine.arguments.contains("--ui-probe")
+        updates=AppUpdateStore(live:!probe)
         let argument=CommandLine.arguments.first{$0.hasPrefix("--probe-directory=")}.map{URL(fileURLWithPath:String($0.dropFirst("--probe-directory=".count)))}
         if probe {
             guard let argument,argument.standardizedFileURL.path.hasPrefix(NSHomeDirectory()+"/Library/Caches/Vibekey/OwnedProbes/") else {fputs("Owned probe directory required.\n",stderr);exit(2)}
@@ -122,7 +136,8 @@ import UserNotifications
     private var lastHardwareInput="等待按键"
     func applicationDidFinishLaunching(_ notification:Notification) {
         let runtime=VibekeyRuntime.shared;self.runtime=runtime
-        NSApp.setActivationPolicy(CommandLine.arguments.contains("--background") ? .accessory:.regular)
+        runtime.launch.readLoginEvent()
+        NSApp.setActivationPolicy(runtime.launch.background ? .accessory:.regular)
         let device=runtime.device,settings=runtime.settings,workflows=runtime.workflows,radial=runtime.radial
         device.onLowBatteryAlert = { [weak notifications=runtime.batteryNotifications] alert in
             guard let notifications else {return}
@@ -168,6 +183,9 @@ import UserNotifications
             interaction.start {[weak self] in self?.writeStatus()}
             runtime.onboard.start();device.start()
             runtime.agentSignals.start()
+            runtime.updates.prepareForInstallation = { [weak self] in await self?.prepareForUpdate() ?? false }
+            runtime.updates.start()
+            runtime.launch.hideInitialWindows()
             closingObserver=NotificationCenter.default.addObserver(forName:NSWindow.willCloseNotification,object:nil,queue:.main) { [weak self] notification in
                 guard let window=notification.object as? NSWindow else {return}
                 Task { @MainActor [weak self,weak window] in
@@ -181,7 +199,7 @@ import UserNotifications
             }
             statusTimer=timer;RunLoop.main.add(timer,forMode:.common)
             writeStatus()
-            if !CommandLine.arguments.contains("--background") {NSApp.activate(ignoringOtherApps:true)}
+            if !runtime.launch.background {NSApp.activate(ignoringOtherApps:true)}
         } else {Task {await VibekeyUIProbe.run(runtime:runtime)}}
     }
     private func forward(_ id:String,pressed:Bool,physicalFlagsOverride:UInt64? = nil) {
@@ -256,6 +274,8 @@ import UserNotifications
                 "agentState":runtime.agentSignals.physicalSnapshot.state?.rawValue as Any? ?? NSNull(),
                 "agentLastEventAt":runtime.agentSignals.physicalSnapshot.lastEventAt.map { ISO8601DateFormatter().string(from:$0) } as Any? ?? NSNull(),
                 "activationPolicy":NSApp.activationPolicy().rawValue,
+                "loginLaunch":runtime.launch.launchedAtLogin,"backgroundLaunch":runtime.launch.background,
+                "launchAtLoginEnabled":runtime.settings.loginItem.enabled,
                 "ordinaryWindowCount":NSApp.windows.filter {$0.canBecomeMain && ($0.isVisible || $0.isMiniaturized)}.count,
                 "shortcutRecording":ShortcutRecordingButton.isAnyRecording,"radialActivation":runtime.radialStore.configuration.activation.rawValue,"baseScrollLines":AU05ActionDefaults.scrollLines]
             try JSONSerialization.data(withJSONObject:status,options:[.prettyPrinted,.sortedKeys]).write(to:path,options:.atomic)
@@ -304,11 +324,17 @@ import UserNotifications
         } catch {runtime.device.log("灯光参数已读回，诊断记录未能保存。")}
     }
     func showMain() {
+        runtime?.launch.revealMainWindow()
         NSApp.setActivationPolicy(.regular)
         if let window=NSApp.windows.first(where:{$0.identifier?.rawValue == "vibekey.main"}) {window.deminiaturize(nil);window.makeKeyAndOrderFront(nil);NSApp.activate(ignoringOtherApps:true)}
         else {reopenMain?()}
     }
-    func applicationShouldHandleReopen(_ sender:NSApplication,hasVisibleWindows flag:Bool)->Bool {showMain();return false}
+    func applicationShouldHandleReopen(_ sender:NSApplication,hasVisibleWindows flag:Bool)->Bool {
+        if AppLaunchState.isLoginEvent(NSAppleEventManager.shared().currentAppleEvent) {
+            runtime?.launch.readLoginEvent(); runtime?.launch.hideInitialWindows(); return false
+        }
+        showMain();return false
+    }
     func applicationShouldTerminate(_ sender:NSApplication)->NSApplication.TerminateReply {
         guard let runtime else {return .terminateNow}
         if runtime.probe {return .terminateNow}
@@ -318,22 +344,31 @@ import UserNotifications
         NSApp.windows.filter{$0.identifier?.rawValue == "vibekey.main"}.forEach{_ = $0.makeFirstResponder(nil)}
         preparingExit=true;runtime.settings.suspended=true;resetInputs();writeStatus()
         runtime.lighting.setDevicePriority(true)
-        Task {
-            guard await runtime.onboard.flush() else {cancelExit("设备快捷键尚未自动保存，请处理后再退出。");return}
-            guard await runtime.device.flushAutomaticChanges() else {cancelExit("设备配置尚未处理完，请稍后重试退出。");return}
-            guard runtime.workflows.flushAutomaticSave(),runtime.radialStore.flushAutomaticSave() else {cancelExit("快捷键或轮盘设置尚未自动保存，请处理后再退出。");return}
-            await runtime.workflows.shutdown();await runtime.radial.prepareForExit()
-            runtime.lighting.setDevicePriority(false)
-            let restored=await runtime.lighting.stopAndRestore(preserveEnabledIntent:true)
-            guard restored != .deferred && restored != .unconfirmed else {
-                cancelExit("退出前原灯光尚未恢复，请在 Agent 状态灯中重试。");return
-            }
-            do {
-                try await runtime.device.restoreForExit();exitPrepared=true;NSApp.terminate(nil)
-            } catch {cancelExit("设备恢复未确认："+error.localizedDescription)}
-        }
+        Task { if await finishPreparingExit(runtime) { NSApp.terminate(nil) } }
         return .terminateCancel
     }
+    private func prepareForUpdate() async -> Bool {
+        guard let runtime, !preparingExit, !runtime.onboard.recoveryRequired else { return false }
+        NSApp.windows.filter { $0.identifier?.rawValue == "vibekey.main" }.forEach { _ = $0.makeFirstResponder(nil) }
+        preparingExit = true; runtime.settings.suspended = true; resetInputs(); writeStatus()
+        runtime.lighting.setDevicePriority(true)
+        return await finishPreparingExit(runtime)
+    }
+    private func finishPreparingExit(_ runtime: VibekeyRuntime) async -> Bool {
+        guard await runtime.onboard.flush() else { cancelExit("设备快捷键尚未自动保存，请处理后再退出。"); return false }
+        guard await runtime.device.flushAutomaticChanges() else { cancelExit("设备配置尚未处理完，请稍后重试退出。"); return false }
+        guard runtime.workflows.flushAutomaticSave(), runtime.radialStore.flushAutomaticSave() else { cancelExit("快捷键或轮盘设置尚未自动保存，请处理后再退出。"); return false }
+        await runtime.workflows.shutdown(); await runtime.radial.prepareForExit()
+        runtime.lighting.setDevicePriority(false)
+        let restored = await runtime.lighting.stopAndRestore(preserveEnabledIntent: true)
+        guard restored != .deferred && restored != .unconfirmed else {
+            cancelExit("退出前原灯光尚未恢复，请在 Agent 状态灯中重试。"); return false
+        }
+        do {
+            try await runtime.device.restoreForExit(); exitPrepared = true; return true
+        } catch { cancelExit("设备恢复未确认：" + error.localizedDescription); return false }
+    }
+
     private func cancelExit(_ message:String) {
         runtime?.device.error=message;preparingExit=false;runtime?.settings.suspended=false;runtime?.lighting.setDevicePriority(false);writeStatus();showMain()
     }

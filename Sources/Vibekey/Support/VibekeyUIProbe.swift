@@ -11,6 +11,7 @@ import VibekeyCore
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             try await Task.sleep(nanoseconds: 350_000_000)
+            guard DeviceProductArtwork.au05Image != nil else { throw ProbeFailure("Complete AU05 3D artwork missing") }
             guard runtime.workflows.bindings.count == 6, runtime.workflows.bindings.allSatisfy({ $0.steps.allSatisfy { $0.kind == .passthrough } }), !runtime.workflows.enabled else { throw ProbeFailure("Six original key defaults were not retained") }
             let deviceFixtures = try (0..<6).map { index in try AU05OnboardShortcut(index: UInt8(index), entries: index >= 4 ? [.init(page:7,usage:index == 4 ? 6:5)] : [.init(page:2,usage:40)]) }
             runtime.onboard.installLayoutFixture(deviceFixtures)
@@ -47,7 +48,7 @@ import VibekeyCore
                     try await snapshot(workspace(section), appearance: appearance, name: "au05-" + section.rawValue + "-minimum-" + label, directory: directory, width: 980, height: 700)
                 }
                 try await snapshot(workspace(destination: .setup), appearance: appearance, name: "setup-" + label, directory: directory)
-                try await snapshot(HardwareSettingsView(settings: runtime.settings), appearance: appearance, name: "settings-" + label, directory: directory, width: 600, height: 540)
+                try await snapshot(HardwareSettingsView(settings: runtime.settings, updates: runtime.updates), appearance: appearance, name: "settings-" + label, directory: directory, width: 600, height: 700)
             }
             let original = runtime.workflows.bindings
             runtime.workflows.bindings[0].steps = [WorkflowStep(kind: .shortcut, keyCode: 8, modifiers: 0x100000)]
@@ -61,7 +62,9 @@ import VibekeyCore
             receipt["AU05Sidebar"] = AU05ConfigurationSection.allCases.map(\.rawValue)
             receipt["launchDestination"] = "AU05 keys; AU05-only sidebar"
             receipt["deviceGalleryRemoved"] = true; receipt["nestedSectionTabsRemoved"] = true; receipt["scrollRange"] = "1...50"; receipt["radialActivationModes"] = RadialActivation.allCases.count
-            receipt["deviceArtwork"] = "Original SwiftUI schematic; no vendor artwork"
+            receipt["deviceArtworkLoaded"] = DeviceProductArtwork.au05Image != nil
+            receipt["deviceArtworkResource"] = "Devices/au05-3d.png"
+            receipt["deviceArtwork"] = "Complete project-authored revision B 3D render; no simplified substitute"
             receipt["nativeSnapshots"] = (try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)).filter { $0.pathExtension == "png" }.count
             receipt["AU05CaptureStarted"] = runtime.device.connected; receipt["result"] = "PASS_NATIVE_RENDERING_ONLY"
         } catch { receipt["result"] = "FAIL"; receipt["error"] = error.localizedDescription }
