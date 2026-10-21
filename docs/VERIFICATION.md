@@ -16,7 +16,9 @@ The following checks cover the new production code and isolated updater fixtures
 | Native rendering and artwork | PASS, 34 snapshots | Light/dark production views load the complete original AU05 3D render. The signed App contains the expected artwork bytes; there are no device writes or host actions in the render probe. |
 | Existing isolated regressions | PASS | 22 hardware suites, 39 battery checks, 50 Desktop metadata checks and 38 Python bridge/recovery tests. |
 | Updated source boundary scan | PASS with one classified public-key finding | Gitleaks flags the intended Ed25519 verification key as a generic API key. It matches the publisher tool's public-key output and the installed App; no sensitive finding remains. The third-party license is preserved verbatim. |
-| Updated public feed and download | PENDING | The production signing tool is waiting for the publisher's local Keychain authorization. Version 0.16.0 and its signed feed have not yet been published. |
+| Anonymous source readback | PASS | Eight public raw-file downloads match the local bytes, including both README files, updater source/documentation, screenshots and complete 3D artwork. |
+| Fresh GitHub clone build | PASS | A new clone of source commit `aef4e62` downloads the pinned Sparkle distribution, builds and verifies the development App without the original checkout's generated files. It does not launch the App or access hardware. |
+| Updated public feed and download | PENDING | The production signing tool is waiting for the publisher's local Keychain authorization. The 0.16.0 binary release and its signed feed have not yet been published. |
 | New public-identity Accessibility permission | PENDING on publisher's Mac | The installed App reports that permission has not been granted. Cross-app macros and input posting are not accepted by the checks above. |
 
 中文：已验证静默提醒、确认后替换重开、错误签名拒绝，以及本机登录项开启和后台无主窗口启动。真实重启登录、App 内开关点击、辅助功能重新授权、生产更新包发布、其他 Mac 安装与 Apple 公证仍保留各自的未运行或待完成状态。
