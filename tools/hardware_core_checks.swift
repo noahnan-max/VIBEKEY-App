@@ -8,7 +8,13 @@ import VibekeyCore
         func rejects(_ body:()throws->Void)->Bool {do {try body();return false} catch {return true}}
         let bindings=InitialDeviceConfiguration.defaults
         check("six original controls",bindings.count==6 && Set(bindings.map(\.triggerID)).count==6)
-        check("defaults only pass through",bindings.allSatisfy{$0.steps.count==1 && $0.steps[0].kind == .passthrough})
+        check("complete saved daily preset",bindings.allSatisfy{$0.steps.count==1 && $0.validationError == nil}
+            && bindings[0].steps[0].kind == .shortcut && bindings[0].steps[0].keyCode == 59
+            && bindings[1].steps[0].kind == .passthrough && bindings[1].steps[0].keyCode == 36
+            && bindings[2].steps[0].kind == .passthrough && bindings[2].steps[0].keyCode == 51
+            && bindings[3].steps[0].kind == .passthrough && bindings[3].steps[0].keyCode == 62
+            && bindings[4].steps[0].kind == .scrollUp && bindings[4].steps[0].scrollLines == 19
+            && bindings[5].steps[0].kind == .scrollDown && bindings[5].steps[0].scrollLines == 18)
         var originals=OriginalDeviceActionRouter()
         check("upper is left Control",originals.handle("key.0",pressed:true)==[.key(keyCode:59,pressed:true,modifiers:0x40001)])
         check("duplicate upper down ignored",originals.handle("key.0",pressed:true).isEmpty)

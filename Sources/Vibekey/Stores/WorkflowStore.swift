@@ -22,9 +22,9 @@ import VibekeyCore
     private var autosaveReady = false
     private lazy var autosaver = ConfigurationAutosaver { [weak self] in _ = self?.flushAutomaticSave() }
     var onLog: ((String) -> Void)?
-    init(directory: URL? = nil) {
-        preferences = directory == nil ? .standard : nil
-        enabled = directory == nil ? UserDefaults.standard.bool(forKey:"hardwareCustomActionsEnabled.v1") : false
+    init(directory: URL? = nil, preferences: UserDefaults? = nil) {
+        self.preferences = preferences ?? (directory == nil ? .standard : nil)
+        enabled = self.preferences?.bool(forKey:"hardwareCustomActionsEnabled.v1") ?? false
         let support = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         url = directory?.appendingPathComponent("workflows.json") ?? support.appendingPathComponent("Vibekey/workflows.json")
         if FileManager.default.fileExists(atPath: url.path) {
@@ -32,7 +32,13 @@ import VibekeyCore
             catch { self.error = error.localizedDescription; loadFailed = true }
         } else {
             bindings = InitialDeviceConfiguration.defaults
-            do { try WorkflowPersistence.save(bindings, to: url);activeBindings=try WorkflowPersistence.load(from:url) }
+            do {
+                try WorkflowPersistence.save(bindings, to: url);activeBindings=try WorkflowPersistence.load(from:url)
+                if let preferences = self.preferences, preferences.object(forKey:"hardwareCustomActionsEnabled.v1") == nil {
+                    enabled = true
+                    preferences.set(true, forKey:"hardwareCustomActionsEnabled.v1")
+                }
+            }
             catch { self.error = error.localizedDescription; loadFailed = true }
         }
         autosaveReady = true

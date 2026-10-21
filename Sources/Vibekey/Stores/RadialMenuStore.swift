@@ -24,8 +24,8 @@ import VibekeyCore
         configuration = initial;draft = initial;selectedID = initial.items.first?.id
         do {
             if let saved = try read() {configuration = saved;draft = saved;selectedID = saved.items.first?.id}
-            else { if !save() { blocked = true; isReady = false } }
-        } catch {blocked = true;isReady = false;self.error = "轮盘配置未能读取，原文件已保留："+error.localizedDescription}
+            else { if !save() { configuration.enabled = false; draft.enabled = false; blocked = true; isReady = false } }
+        } catch {configuration.enabled = false;draft.enabled = false;blocked = true;isReady = false;self.error = "轮盘配置未能读取，原文件已保留："+error.localizedDescription}
         autosaveReady = true
     }
     var automaticSaveMessage: String {
@@ -43,12 +43,7 @@ import VibekeyCore
         return save()
     }
     static var defaults:RadialMenuDocument {
-        func key(_ name:String,_ code:UInt16,_ flags:UInt64 = 0x00100000)->RadialMenuItem {
-            RadialMenuItem(name:name,steps:[WorkflowStep(kind:.shortcut,keyCode:code,modifiers:flags)])
-        }
-        return RadialMenuDocument(schemaVersion:2,enabled:false,items:[WindowOverviewAction.item,key("复制",8),key("粘贴",9),key("撤销",6),key("全选",0),
-            key("重做",6,0x00120000),RadialMenuItem(name:"打开 GitHub",steps:[WorkflowStep(kind:.openURL,argument:"https://github.com")]),
-            RadialMenuItem(name:"音量增加",steps:[WorkflowStep(kind:.volumeUp)]),RadialMenuItem(name:"静音切换",steps:[WorkflowStep(kind:.toggleMute)])],activation:.knobPress)
+        InitialDeviceConfiguration.radialMenu
     }
     func add() {
         guard draft.items.count < RadialMenuValidation.maximumItems else {return}

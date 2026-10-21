@@ -10,6 +10,12 @@ struct SetupGuideView:View {
         ScrollView {
             VStack(alignment:.leading,spacing:22) {
                 Text("开始使用").font(VIFLOWTheme.title)
+                VStack(alignment:.leading,spacing:10) {
+                    Label("内置日常操作预设",systemImage:"square.grid.2x2").font(VIFLOWTheme.subheading)
+                    Text("上键左 Control · 中键回车 · 下键删除 · 左转上滚 · 右转下滚 · 旋钮单击打开轮盘。")
+                    Text("轮盘已准备复制、粘贴、窗口总览和截图等 12 项动作。首次使用自动加载，可在对应模块中修改；已有配置继续保留。")
+                        .font(VIFLOWTheme.caption).foregroundColor(VIFLOWTheme.secondary)
+                }.frame(maxWidth:.infinity,alignment:.leading).viflowPanel(padding:18)
                 step("1","连接 AU05",ready:device.isReady) {
                     HStack {Text(device.connectionDetail);Spacer();Button("重新检测") {device.refresh();settings.refresh()}}
                 }

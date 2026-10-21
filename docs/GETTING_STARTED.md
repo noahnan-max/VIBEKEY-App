@@ -21,10 +21,10 @@ The local build uses an ad-hoc signature unless you explicitly provide `VIBEKEY_
 
 1. Connect the AU05 through a supported data connection. Charge-only cables do not carry HID data. Do not run competing device-control apps against it at the same time.
 2. Open **开始使用** and check the connection information. Disconnected and unread values stay unknown rather than showing a made-up zero.
-3. Open macOS **System Settings → Privacy & Security → Accessibility**, then allow this VIBEKEY build when you want it to send keyboard or mouse events. Configuration readback and event dispatch are separate checks.
-4. In **按键与旋钮**, click the physical control in the device schematic. The **快捷键** editor changes supported device fields. **宏与工作流** defines Mac-side actions. Read the labels before enabling a behavior.
-5. Add a simple action first and test it in an expendable document. App-specific bindings use application bundle identifiers; the selected app must be the foreground target.
-6. In **快捷轮盘**, select an activation mode and add entries. The menu uses pages of eight, supports reverse page transitions, and can be previewed without action execution. Enable it separately when ready.
+3. Open macOS **System Settings → Privacy & Security → Accessibility**, then allow this VIBEKEY build when you want it to send keyboard or mouse events. If it is absent, use **+** to select `/Applications/VIBEKEY.app`. Configuration readback and event dispatch are separate checks.
+4. In **按键与旋钮**, click a physical control in the 3D device model. The **快捷键** editor changes supported device fields. **宏与工作流** defines Mac-side actions. Version 0.16.1 seeds all six controls on first use; review [the preset](PRESETS.md) and test in an expendable document.
+5. Adjust or add actions as needed. App-specific bindings use application bundle identifiers; the selected app must be the foreground target.
+6. In **快捷轮盘**, the new daily preset has twelve actions and a knob-press trigger. Review or edit the entries and activation mode. The menu uses pages of eight, supports reverse page transitions, and can be previewed without action execution. An existing disabled choice stays disabled.
 7. Close the window to keep running in the menu bar. Use **退出 VIBEKEY** to quit. If a configuration or restoration is unconfirmed, the App may keep running and ask you to resolve it rather than claim a successful shutdown.
 
 The App's normal hardware defaults remain pass-through until you opt into custom behavior. Firmware-specific Fn encodings, unsupported oversized device shortcuts and unknown light fields are not guessed.
@@ -47,6 +47,7 @@ Back up your own settings before experimentation. The public App uses the `Vibek
 | --- | --- |
 | AU05 is not ready | Data cable/receiver, power, connection state and competing HID owners. Transport support is firmware-specific. |
 | Device is connected but a Mac action does nothing | Accessibility permission, explicit feature enablement, foreground app and its shortcut mapping. |
+| Accessibility appears on after replacing an App, but the current App still reports no permission | Re-add the current App from its actual installation path. A same-named authorization from an earlier build may remain; complete any system authentication yourself, then refresh or reopen VIBEKEY and check its actual status. |
 | A workflow edit is not active | Validation errors, automatic-save status and the enable switch. The last valid saved configuration stays active. |
 | Battery seems frozen | Sample freshness and whether the device is connected, ready and idle. Polling is not continuous while editing. |
 | Agent state is unknown | Real events, hook trust, file permissions, freshness and supported Desktop version. Configuration installation alone is not an event. |
@@ -74,10 +75,10 @@ open dist/VIBEKEY.app
 
 1. 用受支持的数据连接方式连接 AU05，避免只有充电功能的线材，也不要同时运行争用 HID 的设备控制软件。
 2. 在「开始使用」查看连接信息。未连接或未读出的字段保留未知。
-3. 需要发送键鼠事件时，在「系统设置 → 隐私与安全性 → 辅助功能」允许当前构建的 VIBEKEY。读到设备和成功执行动作是两项不同检查。
-4. 打开「按键与旋钮」，点击示意图上的操作位置。「快捷键」编辑已支持的设备字段，「宏与工作流」编辑电脑端行为。
-5. 先添加一个简单动作，在可丢弃的示例文档中验证。按应用映射使用 bundle identifier，目标应用须处于前台。
-6. 在「快捷轮盘」选择入口、添加动作，先检查预览，再独立启用。每页八项，正反方向均可连续跨页。
+3. 需要发送键鼠事件时，在「系统设置 → 隐私与安全性 → 辅助功能」允许当前构建的 VIBEKEY；如果没有列出，用「+」选择 `/Applications/VIBEKEY.app`。读到设备和成功执行动作是两项不同检查。
+4. 打开「按键与旋钮」，点击 3D 设备图上的操作位置。「快捷键」编辑已支持的设备字段，「宏与工作流」编辑电脑端行为。0.16.1 首次使用会准备六个操作位，先核对[预设说明](PRESETS.md)，在可丢弃的示例文档中验证。
+5. 按需要修改或添加动作。按应用映射使用 bundle identifier，目标应用须处于前台。
+6. 「快捷轮盘」的日常预设已有 12 项动作，旋钮单击打开，可调整入口与内容。先检查预览；每页八项，正反方向均可连续跨页。已有用户主动关闭的状态保持原样。
 7. 关窗后继续在菜单栏运行，选择「退出 VIBEKEY」正常结束。尚有配置或恢复未确认时，App 可能保持运行并提示处理，不会把强制退出作为成功恢复。
 
 默认保留原设备行为，自定义功能由你选择启用。不猜测未确认的 Fn 编码、超出设备容量的组合键或未知灯光字段。
@@ -90,6 +91,7 @@ open dist/VIBEKEY.app
 
 - **连接不上**：核对供电、数据线或接收器、连接状态及其他 HID 占用；不要假定所有固件和连接方式都已覆盖。
 - **动作无效**：核对辅助功能权限、功能启用开关、前台应用及其快捷键。
+- **更换 App 后辅助功能显示开启，但 App 仍报告未允许**：旧构建可能留下同名授权，按实际安装路径重新添加当前 App，由本人完成系统认证，再刷新或重开 VIBEKEY 核对真实状态。
 - **编辑未生效**：检查校验和自动保存状态；无效草稿不会替代最后有效配置。
 - **电量不更新**：查看新鲜度和设备是否就绪、空闲；编辑设备期间不会持续抢占轮询。
 - **Agent 显示未知**：检查真实事件、hooks 信任、文件权限、新鲜度及 Desktop 版本，配置安装不是实际事件。

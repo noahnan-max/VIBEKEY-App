@@ -66,6 +66,6 @@ require(HardwareTrigger.resolve(position: 31, status: 1) == nil, "Unknown input 
 let defaults = InitialDeviceConfiguration.defaults
 try WorkflowValidation.validate(defaults)
 require(defaults.count == 6, "All physical actions initialized")
-require(defaults.allSatisfy { $0.steps.allSatisfy { $0.kind == .passthrough } }, "Initial defaults keep firmware ownership")
+require(defaults.filter { ["key.1", "key.2", "knob.press"].contains($0.triggerID) }.allSatisfy { $0.steps.allSatisfy { $0.kind == .passthrough } }, "Unchanged base keys retain firmware routing")
 require(defaults.first(where: { $0.triggerID == "key.2" })?.steps.first?.argument == "Backspace", "Current custom config, not factory Esc")
 print("PASS: \(checks) protocol/handshake/current-default checks")

@@ -1,5 +1,17 @@
 # Verification / 验证记录
 
+## 0.16.1 — complete first-use daily preset (candidate)
+
+| Check | Result | What it establishes |
+| --- | --- | --- |
+| First-use configuration and persistence | PASS, 32 checks | The six-control profile and enabled 12-action, two-page knob-press radial menu load for missing files. Reopening preserves saved IDs/bytes, explicit disabled choices and saved empty lists. Invalid and future files remain protected. No user data, device writes or host actions. |
+| Saved profile correspondence | PASS, scoped | The portable preset matches the saved six AU05 actions, independent 19/18-line scroll amounts, radial order and twelve public actions. It contains no personal path, account, private URL or device backup. |
+| Full isolated regressions | PASS | 22 hardware suites, 39 battery checks, 50 Desktop metadata checks and 38 Python bridge/recovery tests. |
+| Build and native views | PASS | Locally signed build 1601 has no source drift; 34 native snapshots load the complete 3D artwork. The new preset guide was checked in light and dark appearances. |
+| Publisher's installed candidate | PASS, scoped | Applications contains 0.16.1, confirmed in Finder Get Info. The system login item's Reveal in Finder targets this current App. Background launch has zero ordinary windows; existing configuration hashes are unchanged and the previous workflow enable choice is restored. A real reboot/login is NOT_RUN. |
+| Accessibility and physical cross-app behavior | PENDING / NOT_RUN | The system switch is on after user action, but the current App still reports no permission after refresh/restart. Re-adding the current installed App and fresh runtime acceptance remain pending; no physical macro success is inferred. |
+| 0.16.1 binary publication | PENDING | This preset candidate has not been promoted to the public update feed. Apple Developer ID, notarization and another Mac's first installation are handled separately and are not accepted here. The live published binary/feed remain 0.16.0. |
+
 ## 0.16.0 — login launch and quiet signed updates
 
 The following checks cover the new production code and isolated updater fixtures. They do not establish Apple notarization, another Mac's permissions, or a physical reboot/login.
@@ -18,10 +30,10 @@ The following checks cover the new production code and isolated updater fixtures
 | Updated source boundary scan | PASS with one classified public-key finding | Gitleaks flags the intended Ed25519 verification key as a generic API key. It matches the publisher tool's public-key output and the installed App; no sensitive finding remains. The third-party license is preserved verbatim. |
 | Anonymous source readback | PASS | Eight public raw-file downloads match the local bytes, including both README files, updater source/documentation, screenshots and complete 3D artwork. |
 | Fresh GitHub clone build | PASS | A new clone of source commit `aef4e62` downloads the pinned Sparkle distribution, builds and verifies the development App without the original checkout's generated files. It does not launch the App or access hardware. |
-| Updated public feed and download | PENDING | The production signing tool is waiting for the publisher's local Keychain authorization. The 0.16.0 binary release and its signed feed have not yet been published. |
-| New public-identity Accessibility permission | PENDING on publisher's Mac | The installed App reports that permission has not been granted. Cross-app macros and input posting are not accepted by the checks above. |
+| Updated public feed and download | PASS | GitHub Release v0.16.0 contains the ZIP, hashes and signed appcast. Anonymous downloads match the prepared bytes; the canonical HTTPS feed returns the exact signed bytes. Archive and feed signatures are verified. |
+| New public-identity Accessibility permission | PENDING on publisher's Mac | Cross-app macros and input posting are not accepted by the checks above. See the current candidate's readback. |
 
-中文：已验证静默提醒、确认后替换重开、错误签名拒绝，以及本机登录项开启和后台无主窗口启动。真实重启登录、App 内开关点击、辅助功能重新授权、生产更新包发布、其他 Mac 安装与 Apple 公证仍保留各自的未运行或待完成状态。
+中文：已验证静默提醒、确认后替换重开、错误签名拒绝、本机登录项开启和后台无主窗口启动，0.16.0 生产包与签名更新源也已发布并匿名读回。真实重启登录、App 内开关点击、辅助功能重新授权、其他 Mac 安装与 Apple 公证仍保留各自的未运行或待完成状态。
 
 ## Initial publication / 初次开源
 

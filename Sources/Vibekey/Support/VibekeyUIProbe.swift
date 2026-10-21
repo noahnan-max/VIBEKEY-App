@@ -12,7 +12,11 @@ import VibekeyCore
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
             try await Task.sleep(nanoseconds: 350_000_000)
             guard DeviceProductArtwork.au05Image != nil else { throw ProbeFailure("Complete AU05 3D artwork missing") }
-            guard runtime.workflows.bindings.count == 6, runtime.workflows.bindings.allSatisfy({ $0.steps.allSatisfy { $0.kind == .passthrough } }), !runtime.workflows.enabled else { throw ProbeFailure("Six original key defaults were not retained") }
+            guard runtime.workflows.bindings.count == 6,
+                  runtime.workflows.bindings.map(\.triggerID) == ["key.0", "key.1", "key.2", "knob.press", "knob.left", "knob.right"],
+                  runtime.workflows.bindings.allSatisfy({ $0.validationError == nil }), !runtime.workflows.enabled,
+                  runtime.radialStore.configuration.items.count == 12,
+                  runtime.radialStore.configuration.activation == .knobPress else { throw ProbeFailure("Complete daily preset was not loaded in the isolated fixture") }
             let deviceFixtures = try (0..<6).map { index in try AU05OnboardShortcut(index: UInt8(index), entries: index >= 4 ? [.init(page:7,usage:index == 4 ? 6:5)] : [.init(page:2,usage:40)]) }
             runtime.onboard.installLayoutFixture(deviceFixtures)
             func workspace(_ section: AU05ConfigurationSection = .keys, destination: VibekeyDestination = .devices, native: Bool = true) -> VibekeyWorkspace {
@@ -65,6 +69,7 @@ import VibekeyCore
             receipt["deviceArtworkLoaded"] = DeviceProductArtwork.au05Image != nil
             receipt["deviceArtworkResource"] = "Devices/au05-3d.png"
             receipt["deviceArtwork"] = "Complete project-authored revision B 3D render; no simplified substitute"
+            receipt["dailyPresetControls"] = 6; receipt["dailyPresetRadialItems"] = 12
             receipt["nativeSnapshots"] = (try FileManager.default.contentsOfDirectory(at: directory, includingPropertiesForKeys: nil)).filter { $0.pathExtension == "png" }.count
             receipt["AU05CaptureStarted"] = runtime.device.connected; receipt["result"] = "PASS_NATIVE_RENDERING_ONLY"
         } catch { receipt["result"] = "FAIL"; receipt["error"] = error.localizedDescription }

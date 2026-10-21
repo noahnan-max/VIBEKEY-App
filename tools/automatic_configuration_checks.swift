@@ -12,14 +12,14 @@ import VibekeyCore
         func settle() async throws { try await Task.sleep(nanoseconds: 480_000_000) }
         let directory = root.appendingPathComponent("workflow"), store = WorkflowStore(directory: directory)
         let file = directory.appendingPathComponent("workflows.json")
-        let original = try Data(contentsOf: file), originalIDs = store.activeBindings.map(\.id)
+        let original = try Data(contentsOf: file), originalIDs = store.activeBindings.map(\.id), originalSteps = store.activeBindings[0].steps
         var commits = 0
         store.onLog = { _ in commits += 1 }
         store.selectTrigger("key.0")
         try await settle()
         try check(commits == 0 && Data(contentsOf: file) == original, "Browsing or initialization rewrote saved bindings")
         for code: UInt16 in [0, 11, 8] { store.bindings[0].steps = [WorkflowStep(kind: .shortcut, keyCode: code, modifiers: 0x100000)] }
-        try check(store.automaticSavePending && store.activeBindings[0].steps[0].kind == .passthrough, "Incomplete debounce was activated")
+        try check(store.automaticSavePending && store.activeBindings[0].steps == originalSteps, "Incomplete debounce was activated")
         try await settle()
         try check(commits == 1 && store.activeBindings[0].steps[0].keyCode == 8 && !store.hasUnsavedChanges, "Rapid edits did not save exactly the final value")
         try check(store.activeBindings.map(\.id) == originalIDs && !store.enabled, "Autosave changed identities or implicitly enabled actions")
@@ -40,6 +40,39 @@ import VibekeyCore
         let reopened = WorkflowStore(directory: directory)
         try check(reopened.activeBindings[0].steps[0].keyCode == 9 && reopened.activeBindings.map(\.id) == originalIDs, "Immediate exit lost configuration")
         try check(!reopened.enabled, "Reopen changed the explicit enable choice")
+
+        let suiteName = "io.github.noahnan-max.VIBEKEY.PresetChecks." + UUID().uuidString
+        let preferences = UserDefaults(suiteName: suiteName)!
+        defer { preferences.removePersistentDomain(forName: suiteName) }
+        let freshDirectory = root.appendingPathComponent("fresh-profile")
+        let fresh = WorkflowStore(directory: freshDirectory, preferences: preferences)
+        try check(fresh.enabled && fresh.activeBindings.count == 6, "New profile did not load and enable all six controls")
+        try check(Set(fresh.activeBindings.map(\.triggerID)) == Set(["key.0", "key.1", "key.2", "knob.press", "knob.left", "knob.right"]), "New profile lacks a physical control")
+        try check(fresh.activeBindings[4].steps[0].scrollLines == 19 && fresh.activeBindings[5].steps[0].scrollLines == 18, "Saved scroll amounts were changed")
+        let seededFile = freshDirectory.appendingPathComponent("workflows.json"), seededBytes = try Data(contentsOf: seededFile)
+        fresh.enabled = false
+        let existing = WorkflowStore(directory: freshDirectory, preferences: preferences)
+        try check(!existing.enabled && existing.activeBindings == fresh.activeBindings && Data(contentsOf: seededFile) == seededBytes, "Reopen reset the preset or re-enabled disabled actions")
+        let explicitlyDisabled = WorkflowStore(directory: root.appendingPathComponent("explicit-disabled"), preferences: preferences)
+        try check(!explicitlyDisabled.enabled && explicitlyDisabled.activeBindings.count == 6, "New defaults overrode an explicit disabled preference")
+        preferences.removeObject(forKey: "hardwareCustomActionsEnabled.v1")
+        let emptyDirectory = root.appendingPathComponent("saved-empty"), emptyFile = emptyDirectory.appendingPathComponent("workflows.json")
+        try WorkflowPersistence.save([], to: emptyFile)
+        let emptyBytes = try Data(contentsOf: emptyFile), emptyStore = WorkflowStore(directory: emptyDirectory, preferences: preferences)
+        try check(emptyStore.bindings.isEmpty && !emptyStore.enabled && Data(contentsOf: emptyFile) == emptyBytes, "Saved empty choices were replaced by first-use defaults")
+        let presetWheel = RadialMenuStore(directory: root.appendingPathComponent("fresh-wheel"))
+        try check(presetWheel.configuration.enabled && presetWheel.configuration.activation == .knobPress && presetWheel.configuration.items.count == 12 && presetWheel.configuration.pageCount == 2, "Fresh wheel is incomplete or not reachable from knob press")
+        try check(presetWheel.configuration.items.map(\.name) == ["窗口总览", "复制", "粘贴", "撤销", "全选", "重做", "打开 GitHub", "进入或退出全屏", "静音切换", "显示全部窗口", "整个屏幕截图", "选择区域截图"], "Wheel order or saved action names changed")
+        let portable = try RadialMenuCodec.encode(presetWheel.configuration)
+        let portableText = String(decoding: portable, as: UTF8.self)
+        try check(!portableText.contains("/Users/") && presetWheel.configuration.items.flatMap(\.steps).allSatisfy { $0.kind != .openURL || $0.argument == "https://github.com" }, "Personal paths or URLs entered a public preset")
+        let emptyWheelDirectory = root.appendingPathComponent("empty-wheel")
+        try FileManager.default.createDirectory(at: emptyWheelDirectory, withIntermediateDirectories: true)
+        let emptyWheelFile = emptyWheelDirectory.appendingPathComponent("radial-menu.json")
+        let emptyWheelBytes = try RadialMenuCodec.encode(RadialMenuDocument(schemaVersion: 3, enabled: false))
+        try emptyWheelBytes.write(to: emptyWheelFile)
+        let emptyWheel = RadialMenuStore(directory: emptyWheelDirectory)
+        try check(!emptyWheel.configuration.enabled && emptyWheel.configuration.items.isEmpty && Data(contentsOf: emptyWheelFile) == emptyWheelBytes, "Saved empty wheel was replaced or enabled")
         let brokenDirectory = root.appendingPathComponent("broken")
         try FileManager.default.createDirectory(at: brokenDirectory, withIntermediateDirectories: true)
         let brokenFile = brokenDirectory.appendingPathComponent("workflows.json"), raw = Data("not a workflow".utf8)

@@ -8,8 +8,10 @@ import VibekeyCore
         let store=WorkflowStore(directory:root);var checks=0
         func check(_ value:Bool,_ name:String) {guard value else {fatalError(name)};checks += 1}
         check(store.bindings==store.activeBindings && store.activeBindings.count==6,"Initial saved defaults")
-        store.enabled=true;store.bindings[0].steps=[WorkflowStep(kind:.shortcut,keyCode:8,modifiers:0x100000)]
-        check(store.hasUnsavedChanges && store.customBinding(for:"key.0",applicationBundleID:"")==nil,"Draft affected a live key")
+        store.enabled=true
+        let initialActive=store.customBinding(for:"key.0",applicationBundleID:"")
+        store.bindings[0].steps=[WorkflowStep(kind:.shortcut,keyCode:8,modifiers:0x100000)]
+        check(store.hasUnsavedChanges && store.customBinding(for:"key.0",applicationBundleID:"")==initialActive,"Draft affected a live key")
         store.save();check(!store.hasUnsavedChanges && store.customBinding(for:"key.0",applicationBundleID:"")?.steps[0].keyCode==8,"Saved binding not activated")
         let saved=store.activeBindings,bytes=try Data(contentsOf:root.appendingPathComponent("workflows.json"))
         store.bindings[0].steps[0].keyCode=255;store.save()

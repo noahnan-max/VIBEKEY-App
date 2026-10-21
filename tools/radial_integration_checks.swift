@@ -129,11 +129,11 @@ private func document(_ count: Int = 3, enabled: Bool = true, activation:RadialA
             print("END " + name + " " + (rows.last?["status"] as? String ?? "UNKNOWN"))
         }
 
-        await check("Fresh store defaults remain disabled and round-trip without touching legacy files") {
+        await check("Fresh daily preset is ready and round-trips without touching legacy files") {
             let path = try directory(), snapshot = Data("synthetic snapshot sentinel".utf8), workflows = Data("synthetic workflow sentinel".utf8)
             try snapshot.write(to: path.appendingPathComponent("snapshot.json")); try workflows.write(to: path.appendingPathComponent("workflows.json"))
             let store = RadialMenuStore(directory: path)
-            try require(!store.configuration.enabled && store.configuration.items.count == 9 && WindowOverviewAction.matches(store.configuration.items[0].steps) && store.error == nil, "Unsafe fresh radial defaults")
+            try require(store.configuration.enabled && store.configuration.activation == .knobPress && store.configuration.items.count == 12 && WindowOverviewAction.matches(store.configuration.items[0].steps) && store.error == nil, "Incomplete fresh radial preset")
             try require(RadialMenuStore(directory: path).configuration == store.configuration, "New default configuration did not round-trip")
             try require(try Data(contentsOf: path.appendingPathComponent("snapshot.json")) == snapshot && Data(contentsOf: path.appendingPathComponent("workflows.json")) == workflows,
                         "Radial initialization changed legacy settings or workflow bytes")

@@ -1,0 +1,15 @@
+VIBEKEY 0.16.1
+
+主要更新
+• 首次使用自动加载完整日常操作预设：上键左 Control、中键 Return、下键 Backspace、旋钮单击轮盘、左右滚动。
+• 预设沿用已保存的滚动幅度：向上 19 行、向下 18 行，可在 App 中各自调整。
+• 轮盘默认准备 12 项动作，包含窗口总览、复制、粘贴、撤销、全选、重做、GitHub、全屏、静音和截图。
+• 已有用户配置及明确关闭的开关继续保留；读取失败的文件不会被预设覆盖。
+• 保留静默更新提示、登录启动设置和完整 AU05 3D 设备图。
+
+What's new
+• A complete first-use daily preset for all six AU05 controls.
+• Knob scrolling starts at 19 lines up and 18 lines down, matching the saved profile and remaining adjustable.
+• Twelve ready-to-use radial actions, opened with a knob press.
+• Existing configuration, explicit disabled choices and unreadable files are preserved.
+• Quiet updates, login-launch settings and complete AU05 3D artwork remain available.

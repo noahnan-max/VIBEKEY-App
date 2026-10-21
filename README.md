@@ -15,7 +15,7 @@ VIBEKEY turns the AU05's three keys and rotary knob into a small, configurable w
 
 The app is written in **SwiftUI and AppKit**, with direct IOKit HID communication and local configuration storage. Core features need no online account, subscription, API key, or cloud backend.
 
-This repository contains the **AU05-only, open-source hardware controller**, based on version **0.16.0**. The interface is currently in Simplified Chinese; both English and Chinese documentation are provided. Speech recognition, dictation, language models and an input-method engine are outside this version's scope.
+This repository contains the **AU05-only, open-source hardware controller**. Current source is **0.16.1**, with first-use daily presets; the published binary is [0.16.0](https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.0). The interface is currently in Simplified Chinese; both English and Chinese documentation are provided. Speech recognition, dictation, language models and an input-method engine are outside this version's scope.
 
 ## See the app
 
@@ -49,6 +49,7 @@ This repository contains the **AU05-only, open-source hardware controller**, bas
 | Menu-bar operation | Close the main window and keep Mac workflows running. Use the menu's Quit command for the normal save/restore shutdown path. |
 | Login launch | Enable or disable launch at login inside App settings; login launches stay in the menu bar. |
 | Signed updates | Quiet automatic checks, unread update badges and inline release notes; download and replacement require user action. |
+| First-use presets | All six controls and a 12-action radial menu start with the saved daily-use profile. Existing configuration is preserved. |
 | Appearance | Follow the system appearance or select light/dark mode, using the app's violet visual system. |
 
 ### Practical examples
@@ -60,6 +61,8 @@ This repository contains the **AU05-only, open-source hardware controller**, bas
 - **Coding sessions:** opt in to Agent status lighting so supported running, approval, and turn-end events can be represented on the device.
 
 Actions run with your Mac user's permissions and act on the current application. Check the target application's own shortcuts before enabling an example. A preset describes a mapping; it does not prove that every version or keyboard layout will interpret it identically.
+
+The initial daily preset uses left Control, Return, Backspace, knob-press radial activation and adjustable scrolling (19 lines up, 18 down). The two-page radial menu includes editing, window, full-screen, mute and screenshot actions. See [the complete preset](docs/PRESETS.md). First use still requires connecting the device and granting Accessibility for computer-side actions; merely loading the preset does not write device firmware or execute a workflow.
 
 ## Device settings and Mac behavior
 
