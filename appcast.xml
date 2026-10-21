@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><!-- sparkle-sign-warning:
+IMPORTANT: This file was signed by Sparkle. Any modifications to this file requires re-signing this file with generate_appcast or sign_update! The signed signature will be embedded at the end of this file.
+--><rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0"><channel>
+<title>VIBEKEY AU05 updates</title><link>https://github.com/noahnan-max/VIBEKEY-App/releases</link>
+<description>Signed AU05 releases with user-confirmed installation.</description>
+<item><title>VIBEKEY 0.16.0</title>
+<link>https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.0</link>
+<pubDate>Wed, 21 Oct 2026 04:02:19 GMT</pubDate>
+<sparkle:version>1600</sparkle:version>
+<sparkle:shortVersionString>0.16.0</sparkle:shortVersionString>
+<sparkle:minimumSystemVersion>13.3</sparkle:minimumSystemVersion>
+<sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
+<description sparkle:format="plain-text">VIBEKEY 0.16.0
+
+主要更新
+• App 设置中新增“登录时启动 VIBEKEY”开关；自动启动仅驻留菜单栏，不弹出主窗口。
+• 新增自动检查更新与手动检查。后台发现新版时，只在菜单栏和设置入口显示提示，不抢焦点。
+• 可在 App 内先查看新版本和更新内容，再主动选择更新；确认后由 App 下载、校验签名、替换并重新启动。
+• 安装更新前保存配置并恢复借用的灯光，保留现有按键、宏和轮盘配置。
+• 公开版保留完整 AU05 3D 设备外观与对应按键热区。
+
+What's new
+• A login-launch switch with a menu-bar-only startup.
+• Quiet automatic update checks and in-app update badges.
+• Release notes before opt-in download, signed verification and App replacement.
+• Configuration preservation and graceful shutdown before an update.
+• Complete AU05 3D artwork with aligned control regions.
+
+此版本为 AU05 公开版，不包含私人 Keychron 功能。
+当前安装包未做 Apple Developer ID 公证；首次在其他 Mac 打开时，可能需要由用户在系统安全设置中允许。
+首次从 0.15.3 升级需要下载安装此版本；之后可使用 App 内更新。
+</description>
+<enclosure url="https://github.com/noahnan-max/VIBEKEY-App/releases/download/v0.16.0/VIBEKEY-0.16.0-AU05-arm64.zip" sparkle:edSignature="e0I4DPReyq7CAVmioDxpd2D013yjy4NxXiPF2XaTjyz3x9VrNdB8GjRa6EErOcrL19tyF/5goHuTtyGYqPexCA==" length="3849501" type="application/octet-stream"></enclosure>
+</item></channel></rss><!-- sparkle-signatures:
+edSignature: hkIuauj4jazRfBbZk6+xa84P3flzqoDuMP6+fYE3ewZ3Pvm/3/WCzarDgky7zezi4Y2c9VMIMJakB8qZtWGHDA==
+length: 2559
+-->
