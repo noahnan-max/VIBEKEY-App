@@ -19,7 +19,7 @@ Before confirming Sparkle's final relaunch, VIBEKEY flushes its configuration, c
 
 `prepare_release.py` does not publish, install, create credentials, or configure a recurring release task. Back up the publisher's signing material through an appropriate protected process; losing the key can require a manual reinstall or a separately verified key-rotation process. Do not export it into the repository.
 
-The current local release process has no Apple Developer ID notarization. This is distinct from Sparkle's update signature. First installation on another Mac and that Mac's permissions need their own acceptance. A successful signature check on the publisher's Mac is not evidence of warning-free installation elsewhere.
+The official 0.16.1 archive completed Developer ID signing, hardened runtime, secure timestamps, Apple notarization and stapling before its final Sparkle signatures were generated. The same archive was installed and launched on a second MacBook, with human confirmation of its window and complete 3D artwork. This is distinct from the default local-development build, which does not automatically notarize its output. For future Developer ID releases, finish Apple processing and Gatekeeper validation before packaging and signing the final update bytes. Each target Mac still manages its own permissions. See [the dated verification record](VERIFICATION.md).
 
 ## 中文
 
@@ -30,5 +30,7 @@ The current local release process has no Apple Developer ID notarization. This i
 后续维护时，递增 `release/version.json` 的版本及 build，撰写对应更新说明，构建并运行必要验证，然后用 `prepare_release.py` 生成签名发布文件。经发布授权后先上传真实下载包，再发布与该包完全对应的签名 feed。脚本本身不外发、不安装、不自动创建凭据或定时发布。
 
 从 0.15.3 首次升级需要手动安装一次含检查器的版本。用户的按键、宏和轮盘仍保存在本机。新版安装前先保存配置并正常恢复硬件状态，未确认的恢复会阻止替换。
+
+正式 0.16.1 归档先完成 Developer ID 签名、hardened runtime、可信时间戳、Apple 公证与票据装订，再对最终包体和更新源生成 Sparkle 签名；同一包已在另一台 MacBook 安装、正常启动并确认完整 3D 显示。源码的默认本地构建不会自动公证。后续正式包也须在 Apple 处理完成后签署最终字节，已有下载包不复用旧签名覆盖；各台 Mac 的辅助功能等权限仍由当地用户管理。
 
 References: [Apple ServiceManagement](https://developer.apple.com/documentation/servicemanagement/smappservice), [Sparkle gentle reminders](https://sparkle-project.org/documentation/gentle-reminders/), [signed publishing](https://sparkle-project.org/documentation/publishing/).

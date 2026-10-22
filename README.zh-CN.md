@@ -15,7 +15,7 @@ VIBEKEY 是一款原生 macOS 硬件控制 App。它把 AU05 的上、中、下�
 
 应用使用 **SwiftUI + AppKit** 开发，通过 **IOKit HID** 与设备通信，配置保存在本机。基础功能不需要注册账户、订阅服务、API Key 或云端后台。
 
-本仓库开源的是 **AU05 专用硬件控制版本**。当前源码为带首次使用预设的 **0.16.1**，已发布安装包为 [0.16.0](https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.0)。App 当前使用简体中文界面，配有完整中英文文档。本版本不提供自研语音识别、语音输入、模型账户或输入法引擎。
+本仓库开源的是 **AU05 专用硬件控制版本**。当前源码与[正式安装包](https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.1)均为带首次使用预设的 **0.16.1**；正式 Apple silicon 下载包已完成 Developer ID 签名、Apple 公证与票据装订。App 当前使用简体中文界面，配有完整中英文文档。本版本不提供自研语音识别、语音输入、模型账户或输入法引擎。
 
 ## 界面预览
 
@@ -93,7 +93,7 @@ open dist/VIBEKEY.app
 
 首次构建会下载官方固定版本 Sparkle 2.10.0 并核对 SHA-256。构建脚本会编译核心、诊断工具及 GUI，生成完整 `.app` 并检查本地开发签名。它不会安装驱动、下载模型、安装 Agent hooks，也不会替换 `/Applications` 中的在用 App。
 
-默认采用 **ad hoc 本地开发签名**，当前不提供 Apple 公证承诺。此方式不代表另一台 Mac 可以免提示安装，重新构建后辅助功能权限也可能需要重新授予。如果你已有自己的签名身份，可以显式指定：
+构建脚本默认采用 **ad hoc 本地开发签名**，输出不会自动进行 Apple 公证。正式 0.16.1 下载包已单独完成 Developer ID 签名、公证与票据装订；自行重新构建后，辅助功能权限仍可能需要重新授予。如果你已有自己的签名身份，可以显式指定：
 
 ```sh
 VIBEKEY_SIGNING_IDENTITY="你已配置的签名身份" ./script/build_and_run.sh --build-only

@@ -15,7 +15,7 @@ VIBEKEY turns the AU05's three keys and rotary knob into a small, configurable w
 
 The app is written in **SwiftUI and AppKit**, with direct IOKit HID communication and local configuration storage. Core features need no online account, subscription, API key, or cloud backend.
 
-This repository contains the **AU05-only, open-source hardware controller**. Current source is **0.16.1**, with first-use daily presets; the published binary is [0.16.0](https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.0). The interface is currently in Simplified Chinese; both English and Chinese documentation are provided. Speech recognition, dictation, language models and an input-method engine are outside this version's scope.
+This repository contains the **AU05-only, open-source hardware controller**. Current source and the [published binary](https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.1) are **0.16.1**, with first-use daily presets. The official Apple-silicon download is Developer ID signed, notarized and stapled. The interface is currently in Simplified Chinese; both English and Chinese documentation are provided. Speech recognition, dictation, language models and an input-method engine are outside this version's scope.
 
 ## See the app
 
@@ -95,7 +95,7 @@ open dist/VIBEKEY.app
 
 The first build downloads the pinned official Sparkle 2.10.0 distribution and verifies its SHA-256. The script builds the core, diagnostic executable and GUI, creates an actual `.app` bundle, and verifies its local development signature. It does not install a driver, download a model, install Agent hooks, or replace an App in `/Applications`.
 
-The default signature is **ad hoc for local development**. This is not an Apple-notarized release or a promise of warning-free installation on another Mac. Rebuilding an ad-hoc-signed application can require renewed Accessibility approval. To use an identity already configured on your own Mac:
+The build script's default signature is **ad hoc for local development**; its output is not automatically notarized. The official 0.16.1 download separately completed Developer ID signing, Apple notarization and stapling. Rebuilding an ad-hoc-signed application can require renewed Accessibility approval. To use an identity already configured on your own Mac:
 
 ```sh
 VIBEKEY_SIGNING_IDENTITY="Your existing signing identity" ./script/build_and_run.sh --build-only

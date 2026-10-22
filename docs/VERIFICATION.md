@@ -1,6 +1,24 @@
 # Verification / 验证记录
 
-## 0.16.1 — complete first-use daily preset (candidate)
+## 0.16.1 distribution — 2026-10-22
+
+The official [0.16.1 release](https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.1) uses frozen source `af1ded8e047b0c409a7f76750250e2f42a2d9c1a`. Archive: `VIBEKEY-0.16.1-AU05-arm64.zip`, 3,887,324 bytes, SHA-256 `879ae1aae6bd5cce721c996183949f73cb6ac0e01f2652011acff9a2450d0302`.
+
+| Check | Result | What it establishes |
+| --- | --- | --- |
+| Developer ID distribution bundle | PASS, 6 components | Host, framework, updater and helper components use Developer ID signatures, hardened runtime and secure timestamps; extracted deep/strict verification passes. |
+| Apple notarization and local ticket | PASS | Apple accepted the submitted artifact; the final archive's extracted ticket validates and Gatekeeper reports Notarized Developer ID. No new signing or notarization was performed during publication. |
+| Second-Mac first installation | PASS, scoped | The same archive was installed and launched normally on a MacBook with Gatekeeper enabled. The user explicitly confirmed the actual window and complete 3D device artwork before approving publication. This is not a physical AU05 or cross-app macro test. |
+| Anonymous HTTPS assets | PASS | The published ZIP, checksums and signed feed were downloaded without account credentials and match the immutable prepared bytes. Archive and complete feed Ed25519 signatures verify with the embedded public key alone. |
+| Version and update metadata | PASS | Build 1601 is newer than 1600 using Sparkle's version comparator. The signed enclosure names the exact public ZIP URL and byte count; the embedded key matches the earlier update configuration. |
+| Complete 3D artwork | PASS | The archive retains PNG SHA-256 `47132ea990eac954a4d4bb61990fa7911035aa8fcb6a0119d9470ea0597ddb99`. |
+| Post-publication MacBook URL readback | PENDING, separate owner | A fresh download from the final public URL on the target MacBook is recorded separately after this publication. The MacBook's standalone stapler lookup previously reported a CloudKit TLS connection warning; the same ZIP's ticket validated on Mac mini and MacBook Gatekeeper accepted it. |
+
+The earlier 0.16.0 assets remain available. Local development versions and their uncommitted changes are outside this release. Installation permissions, physical controls, cross-app actions and real reboot/login retain their own acceptance scope.
+
+中文：本次发布使用已确认的同一份 0.16.1 归档，不重打包、不重签名。Developer ID、Apple 公证、装订与 Gatekeeper 检查通过，同一包已在另一台 MacBook 安装、正常启动，并由用户确认窗口和完整 3D 显示；三个公开资产的匿名下载与签名也已核对。目标 MacBook 对最终公开地址的再次下载另行记录，不将界面确认等同实体按键、跨应用宏或开机登录验收。
+
+## 0.16.1 development verification — 2026-10-21
 
 | Check | Result | What it establishes |
 | --- | --- | --- |
@@ -9,9 +27,9 @@
 | Full isolated regressions | PASS | 22 hardware suites, 39 battery checks, 50 Desktop metadata checks and 38 Python bridge/recovery tests. |
 | Build and native views | PASS | Locally signed build 1601 has no source drift; 34 native snapshots load the complete 3D artwork. The new preset guide was checked in light and dark appearances. |
 | Public preset source | PASS | Nine anonymous raw-file downloads match the committed preset source, version, bilingual docs and screenshot. A fresh GitHub clone of `af1ded8` downloads the pinned dependency and builds without the original checkout's generated files; it does not launch the App or access hardware. |
-| Publisher's installed candidate | PASS, scoped | Applications contains 0.16.1, confirmed in Finder Get Info. The system login item's Reveal in Finder targets this current App. Background launch has zero ordinary windows; existing configuration hashes are unchanged and the previous workflow enable choice is restored. A real reboot/login is NOT_RUN. |
-| Accessibility and physical cross-app behavior | PENDING / NOT_RUN | The system switch is on after user action, but the current App still reports no permission after refresh/restart. Re-adding the current installed App and fresh runtime acceptance remain pending; no physical macro success is inferred. |
-| 0.16.1 binary publication | PENDING | This preset candidate has not been promoted to the public update feed. Apple Developer ID, notarization and another Mac's first installation are handled separately and are not accepted here. The live published binary/feed remain 0.16.0. |
+| Publisher's installed candidate | PASS, scoped historical check | On 2026-10-21, Applications contained 0.16.1, confirmed in Finder Get Info. The system login item's Reveal in Finder targeted that App. Background launch had zero ordinary windows; existing configuration hashes were unchanged and the previous workflow enable choice was restored. A real reboot/login was NOT_RUN. |
+| Accessibility and physical cross-app behavior | NOT_RUN for this release | The publisher's 2026-10-21 local identity migration had an unresolved permission readback. That historical local issue is not part of this publication, and no physical macro success is inferred. Each installation needs its own permission and behavioral acceptance. |
+| 0.16.1 binary publication | PASS | See the dated 2026-10-22 distribution record above for the official archive and its scoped acceptance. |
 
 ## 0.16.0 — login launch and quiet signed updates
 
