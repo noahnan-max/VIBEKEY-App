@@ -1,0 +1,11 @@
+VIBEKEY 0.16.3
+
+相对公开版 0.16.1 的更新
+• 修复 macOS 在登录或后台启动后，延迟恢复主窗口而意外弹出的情况。
+• 后台运行时持续处理晚到的主窗口恢复；用户主动打开 App 后，窗口仍可正常显示。
+• 保留既有配置、日常操作预设、静默更新和完整 AU05 3D 设备图。
+
+Changes since public version 0.16.1
+• Fixes a main window appearing when macOS completes window restoration after login or background launch.
+• Keeps late restored main windows hidden during background operation while preserving explicit manual opening.
+• Preserves existing configuration, daily presets, quiet updates and the complete original AU05 3D artwork.

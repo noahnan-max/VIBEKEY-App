@@ -195,7 +195,11 @@ import UserNotifications
                 }
             }
             let timer=Timer(timeInterval:1,repeats:true) {[weak self] _ in
-                guard let owner=self else {return};Task {@MainActor in owner.writeStatus()}
+                guard let owner=self else {return};Task {@MainActor in
+                    // Window restoration can finish after the launch callback.
+                    runtime.launch.hideInitialWindows()
+                    owner.writeStatus()
+                }
             }
             statusTimer=timer;RunLoop.main.add(timer,forMode:.common)
             writeStatus()
