@@ -1,0 +1,21 @@
+VIBEKEY 0.21.1
+
+相对公开版 0.16.1 的主要更新
+• 新增使用统计首页：实时累计收录量、每日热力图、连续天数及观察/时长估算来源。后续删改不扣回，历史汇总保留。
+• 公开版首次由用户主动开启本机统计；不录音、不保存原文、不上传统计，随时可以关闭。
+• 新增 AU05 智能配置：用户自选兼容模型或本机 Codex 登录，先生成可审核方案，确认后才备份、写入并完整读回；支持本机备份恢复。
+• 修复 DeepSeek 工具调用兼容问题，复用本次运行内已授权的端点密钥，并区分设置已保存与模型调用已验证。
+• 将旋钮单步滚动行数放到快捷键设置中；多步骤宏继续保留各自的滚动设置。
+• 保留完整 AU05 3D 图、日常预设、原有配置、菜单栏运行、登录启动和静默更新；处理后台启动时晚到的窗口恢复。
+
+统计含明确标注的估算，不保证所有第三方输入法的逐字覆盖。智能配置需要用户自己的兼容服务或已有 Codex 登录，不提供账户或密钥。公开版不导入私人研发配置。
+
+Highlights since public version 0.16.1
+• Adds a usage home with live cumulative received characters, daily activity, streaks and separate observed/estimated sources. Later edits do not subtract received input; history is preserved.
+• Local statistics require explicit opt-in. No audio capture, raw-text storage or statistics upload; collection can be disabled at any time.
+• Adds AU05 intelligent configuration using a user-selected compatible model or existing local Codex CLI login. Preview first; only confirmation starts full backup, verified apply and optional restore.
+• Fixes DeepSeek tool-choice compatibility, reuses authorized endpoint credentials in process memory, and distinguishes saved settings from a verified model call.
+• Places standalone rotary scroll amount in shortcut settings while retaining per-step amounts in multi-step macros.
+• Preserves complete AU05 artwork, presets, existing configuration, menu-bar/login behavior and quiet updates, including late restored windows during background startup.
+
+Statistics include labeled estimates and do not guarantee exact coverage of every input method. Model access requires your own compatible service or existing Codex login. No private development settings, account or credential is imported.

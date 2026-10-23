@@ -114,6 +114,12 @@ import VibekeyCore
             read: { [device] in try await device.readOnboardShortcut(index: $0, connection: connection, permit: permit) },
             write: { [device] in try await device.writeOnboardShortcut($0, connection: connection, permit: permit) })
     }
+    func acceptSmartConfiguration(_ snapshot: AU05SmartSnapshot) {
+        guard snapshot.connectionID == device.connectionID, !hasPendingChanges else { return }
+        configurations = Dictionary(uniqueKeysWithValues: snapshot.shortcuts.map { ($0.index, $0) }); drafts = configurations
+        loadedConnection = snapshot.connectionID; attemptedConnection = snapshot.connectionID
+        error = nil; message = "智能配置已完整读回"; onConfigurationChanged?()
+    }
     func retry() { guard !isBusy, !recoveryRequired else { return }; schedule() }
     func reloadFromDevice() {
         guard !isBusy, !recoveryRequired else { return }

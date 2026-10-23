@@ -3,7 +3,7 @@ import SwiftUI
 import VibekeyCore
 
 enum VibekeyDestination: String, CaseIterable, Identifiable {
-    case devices, setup
+    case statistics, devices, setup
     var id: String { rawValue }
 }
 
@@ -18,20 +18,23 @@ struct VibekeyWorkspace: View {
     var onboard: AU05OnboardStore?
     var batteryNotifications: BatteryNotificationController?
     var updateAvailable = false
+    var usage: UsageStatisticsStore?
     @State private var destination: VibekeyDestination
     @State private var au05Section: AU05ConfigurationSection
 
     init(device: DeviceStore, workflows: WorkflowStore, settings: HardwareSettings,
          radialStore: RadialMenuStore, radial: RadialMenuController, lighting: SmartLightingController, agentSignals: AgentSignalStore,
-         onboard: AU05OnboardStore? = nil, initialDestination: VibekeyDestination = .devices,
+         onboard: AU05OnboardStore? = nil, initialDestination: VibekeyDestination = .statistics,
          initialAU05Section: AU05ConfigurationSection = .keys,
-         batteryNotifications: BatteryNotificationController? = nil, updateAvailable: Bool = false) {
+         batteryNotifications: BatteryNotificationController? = nil, updateAvailable: Bool = false,
+         usage: UsageStatisticsStore? = nil) {
         self.device = device; self.workflows = workflows; self.settings = settings
         self.radialStore = radialStore; self.radial = radial; self.lighting = lighting; self.agentSignals = agentSignals
         self.onboard = onboard
         self.batteryNotifications = batteryNotifications
         self.updateAvailable = updateAvailable
-        _destination = State(initialValue: initialDestination)
+        self.usage = usage
+        _destination = State(initialValue: usage == nil && initialDestination == .statistics ? .devices : initialDestination)
         _au05Section = State(initialValue: initialAU05Section)
     }
     var body: some View {
@@ -45,12 +48,13 @@ struct VibekeyWorkspace: View {
                     .opacity(destination == .devices ? 1 : 0)
                     .allowsHitTesting(destination == .devices).accessibilityHidden(destination != .devices)
                 if destination == .setup { SetupGuideView(device: device, settings: settings).background(VIFLOWTheme.canvas) }
+                if destination == .statistics, let usage { UsageStatisticsView(store: usage).background(VIFLOWTheme.canvas) }
             }.frame(maxWidth: .infinity, maxHeight: .infinity).background(VIFLOWTheme.canvas)
         }
         }.font(VIFLOWTheme.body).foregroundColor(VIFLOWTheme.ink).tint(VIFLOWTheme.accent)
             .buttonStyle(VIFLOWSecondaryButtonStyle()).frame(minWidth: 980, minHeight: 700)
             .onChange(of: destination) {
-                if $0 == .setup, radial.previewMode { radial.cancel() }
+                if $0 != .devices, radial.previewMode { radial.cancel() }
                 _ = NSApp.windows.first(where: { $0.identifier?.rawValue == "vibekey.main" })?.makeFirstResponder(nil)
             }
     }
@@ -69,6 +73,11 @@ struct VibekeyWorkspace: View {
             Rectangle().fill(VIFLOWTheme.border).frame(height: 1).padding(.horizontal, 16)
             ScrollView {
                 VStack(alignment: .leading, spacing: 4) {
+                    if usage != nil {
+                        navigationRow("使用统计", symbol: "chart.bar.xaxis", selected: destination == .statistics,
+                                      identifier: "vibekey.navigation.statistics") { destination = .statistics }
+                            .padding(.top, 12)
+                    }
                     Text("设备功能").font(VIFLOWTheme.font(12, weight: .medium)).foregroundColor(VIFLOWTheme.secondary)
                         .padding(.horizontal, 12).padding(.top, 18).padding(.bottom, 7)
                     ForEach(AU05ConfigurationSection.allCases) { section in

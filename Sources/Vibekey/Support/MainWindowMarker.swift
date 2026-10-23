@@ -4,16 +4,20 @@ import SwiftUI
 
 /// Identifies the main window so the menu bar can reopen it without creating another.
 struct MainWindowMarker: NSViewRepresentable {
-    func makeNSView(context: Context) -> MarkerView { MarkerView() }
-    func updateNSView(_ nsView: MarkerView, context: Context) { }
+    var identifier = "vibekey.main"
+    func makeNSView(context: Context) -> MarkerView {
+        let view = MarkerView(); view.targetIdentifier = identifier; return view
+    }
+    func updateNSView(_ nsView: MarkerView, context: Context) { nsView.targetIdentifier = identifier }
 
     final class MarkerView: NSView {
+        var targetIdentifier = "vibekey.main"
         // This view only observes its window; it must never become a mouse target.
         override func hitTest(_ point: NSPoint) -> NSView? { nil }
 
         override func viewDidMoveToWindow() {
             super.viewDidMoveToWindow()
-            window?.identifier = NSUserInterfaceItemIdentifier("vibekey.main")
+            window?.identifier = NSUserInterfaceItemIdentifier(targetIdentifier)
         }
     }
 }

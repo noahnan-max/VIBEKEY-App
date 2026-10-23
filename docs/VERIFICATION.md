@@ -1,5 +1,32 @@
 # Verification / 验证记录
 
+## 0.21.1 — statistics and AU05 intelligent configuration
+
+This source candidate integrates the authors' frozen 0.21.1 AU05 functionality into the existing public identity and update channel. It does not publish the private multi-device App. Public build: **2101**, macOS **13.3+**, Apple silicon. Source and local-development checks below are distinct from the signed distribution record, which is added after Apple processing and public readback.
+
+| Check | Result | Scope |
+| --- | --- | --- |
+| Portable public build | PASS | Direct Swift build and ad-hoc deep/strict bundle integrity; no production signing keys or live App replacement. |
+| Existing hardware/core regressions | PASS, 22 suites | Original device ownership, routing, shortcuts, workflows, radial, lighting, persistence and negative cases. No physical device writes or system input posting. |
+| Battery / Desktop metadata / bridge | PASS, 39 / 50 / 38 checks | Existing isolated fixtures; no genuine low-battery or live Agent-event acceptance inferred. |
+| Cumulative statistics | PASS, 70 checks | Live accumulation, deletion without subtraction, draft deduplication, focus retry/estimates, single merge and pause/exit retention. Positive fixtures explicitly opt in. |
+| Public statistics purpose and history | PASS, 13 checks | First-use and legacy automatic flags do not observe text; explicit versioned opt-in, rate edits, reopen, pause and future-file preservation. Injected synthetic reader only. |
+| Independent statistics review | PASS, bounded | An independent author reviewed the observation gates and ran 18 additional synthetic checks. A probe-isolation coverage note was addressed by explicitly consenting the disabled-probe fixture; the original 70 checks then passed again. |
+| AU05 smart planner and transaction | PASS, 41 checks | Limits, conflicts, archive privacy/readback, baseline changes, partial writes, disconnection and guarded restoration using synthetic adapters. |
+| Credential reuse | PASS, 9 checks | Endpoint isolation, concurrent coalescing and cancellation retry using injected readers; zero real Keychain reads. A new unsaved public model configuration also skips Keychain metadata queries. |
+| Model HTTP compatibility | PASS, 24 checks / 18 loopback requests | Generic/DeepSeek tool selection, strict fields/tools, bounded request/response, cancellation before network, redirect refusal and error redaction. No cloud or real credential. |
+| Released configuration preservation | PASS, 23 checks | Fixtures generated with the released 0.16.1 Core retain macro/radial bytes and disabled choices. Intentional empty, damaged/future/unknown-action files are preserved; daily first-use presets remain. Synthetic files use the same safe owned-directory rules as the product. |
+| Login state | PASS, 11 checks | Background login event forms, manual reopen and honest registration state. No real system login registration or reboot. |
+| Native public rendering | PASS, 46 snapshots | 34 AU05/settings plus 6 statistics and 6 AU05 smart views, in light/dark and regular/minimum windows. The actual key/knob page renders the complete original 3D artwork and controls. All configuration/history is synthetic. |
+| Native model-to-transaction flow | PASS, loopback and synthetic device | Actual public model/Store/view code verifies a connection, produces a nonempty zero-write preview, rejects unacknowledged apply, then performs programmatically confirmed backup/apply/full readback/cold host-file read/restore. Zero hardware writes, host input or real Keychain access. This is not a human button-click test. |
+| Source privacy boundary | PASS with classified public verification key | No private keyboard implementation/artwork/history, internal provider, credentials or actual user data. The sole secret-scanner finding is the unchanged public Ed25519 verification key. |
+| Public identity and original artwork | PASS | Public bundle identity and update key retained; complete 3D PNG SHA-256: `47132ea990eac954a4d4bb61990fa7911035aa8fcb6a0119d9470ea0597ddb99`. |
+
+Real third-party dictation versus exact spoken-character ground truth, new physical smart mappings/output, real reboot/login and other real model providers are **NOT_RUN for this public candidate**. Statistics retain labeled estimates and do not claim universal exact coverage. Source authors separately verified the current private 0.21.1's authorized model connection and nonempty preview; that result is not public-binary, physical-apply or other-provider acceptance. Physical mappings were not changed for this release's tests.
+
+Reproduce the automated checks with `./script/run_tests.sh`. Native synthetic model rendering requires an explicit `python3 tools/run_au05_smart_ui.py --launch` after a build; it runs only the local fixture and never substitutes for real hardware or a real model account. The local-development signature is not Apple Developer ID notarization. Distribution, anonymous downloads and target-Mac checks require the separate finalized artifact record.
+
+
 ## 0.16.1 distribution — 2026-10-22
 
 The official [0.16.1 release](https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.1) uses frozen source `af1ded8e047b0c409a7f76750250e2f42a2d9c1a`. Archive: `VIBEKEY-0.16.1-AU05-arm64.zip`, 3,887,324 bytes, SHA-256 `879ae1aae6bd5cce721c996183949f73cb6ac0e01f2652011acff9a2450d0302`.

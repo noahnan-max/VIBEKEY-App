@@ -1,6 +1,6 @@
 # Architecture / 架构说明
 
-VIBEKEY is a native desktop application with one AU05 transport owner. The open-source App has no embedded web server, web frontend, speech subsystem, or model backend.
+VIBEKEY is a native desktop application with one AU05 transport owner. The open-source App has no embedded web server, web frontend, speech subsystem, or hosted model backend. Optional user-configured model clients plan AU05 changes; consent-gated usage observation is a separate local side channel.
 
 ```mermaid
 flowchart LR
@@ -46,6 +46,14 @@ Paths without the `Sources/` prefix in this table are relative to the correspond
 
 The diagnostic executable is a separate explicit entry point. Its hardware access is not invoked by the normal automated test runner.
 
+## Usage and model boundaries
+
+`PassiveInputStatistics` models local aggregate history; `AutomaticMicrophoneMonitor`, `PassiveInputObserver` and `UsageStatisticsStore` run the optional read-only side channel. Versioned consent gates every observation entry. The original input path executes first and never awaits AX reads or disk writes. Provisional counts are merged once; pause/shutdown preserve received totals.
+
+`SmartConfigurationAPI` and `SmartPlanDecoding` are generic transport/schema utilities in VibekeyCore. The AU05-only model Store uses a public preferences directory and Keychain namespace. `AU05SmartPlanner` validates the proposal, and `AU05SmartTransaction` reserves existing device ownership, compares the baseline, persists a complete backup, performs bounded writes and verifies readback/rollback. The model cannot call host actions directly. Statistics do not enter its context.
+
+The existing public bundle identity, signed updater and launch-at-login behavior remain in place. Update preparation and shutdown flush statistics and respect pending AU05 recovery before replacement.
+
 ## 中文说明
 
 App 由 SwiftUI / AppKit 界面、AU05 协议核心和单一设备会话构成。界面通过 Store 读取状态并提出操作，不自行建立第二条 HID 通道。按键事件先经过归属和手势路由，再进入原快捷键行为、工作流或轮盘控制器。
@@ -54,4 +62,4 @@ App 由 SwiftUI / AppKit 界面、AU05 协议核心和单一设备会话构成�
 
 Agent 事件只形成状态输入，不能生成任意工作流或越过执行边界。灯光借用原设备参数，限定字段并读回；正常退出先保存配置、停止电脑端动作、尝试恢复灯光及设备状态。失败时保留错误和恢复入口，不把进程结束当成恢复成功。
 
-公开源码没有内置 Web 服务、语音引擎、输入法引擎或模型后台。诊断命令行工具是单独入口，不属于默认自动化测试的真实硬件路径。
+公开源码没有内置 Web 服务、语音引擎、输入法引擎或托管模型后台；可选模型客户端由用户自行接入，统计是经主动选择的独立本机旁路，不进入语音或模型数据流。诊断命令行工具是单独入口，不属于默认自动化测试的真实硬件路径。

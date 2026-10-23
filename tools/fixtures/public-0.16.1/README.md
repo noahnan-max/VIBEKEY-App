@@ -1,0 +1,1 @@
+Synthetic configuration fixtures generated with the released v0.16.1 VibekeyCore source (af1ded8e047b0c409a7f76750250e2f42a2d9c1a). Fixed example identities; no user configuration or data. Used to verify that an update retains existing workflows, radial entries and disabled choices.

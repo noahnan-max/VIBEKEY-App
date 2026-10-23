@@ -251,8 +251,8 @@ final class DeviceStore: ObservableObject {
         guard connectionID == id,isReady else {throw SmartLightingFailure.connectionChanged}
         return try SmartLightingSnapshot(connectionID:id,payload:Array(reply.payload))
     }
-    @MainActor func applyLighting(_ request:SmartLightingWriteRequest,permit:SmartLightingPermit) async throws -> SmartLightingSnapshot {
-        guard !lightingWriteInFlight else {throw SmartLightingApplyError(.unavailable)}
+    @MainActor func applyLighting(_ request:SmartLightingWriteRequest,permit:SmartLightingPermit,onboardPermit:UUID? = nil) async throws -> SmartLightingSnapshot {
+        guard !lightingWriteInFlight, onboardReservation == onboardPermit else {throw SmartLightingApplyError(.unavailable)}
         lightingWriteInFlight=true;defer {lightingWriteInFlight=false}
         var observed:SmartLightingSnapshot?
         do {
@@ -265,7 +265,7 @@ final class DeviceStore: ObservableObject {
                 guard observed == step.expected else {throw SmartLightingFailure.ownershipChanged}
                 let _:DeviceReply = try await withCheckedThrowingContinuation {continuation in
                     session.write(.lights,frame:step.frame,shouldSend:{[weak self] in
-                        permit.isValid && self?.connectionID == request.connectionID && self?.isReady == true
+                        permit.isValid && self?.connectionID == request.connectionID && self?.isReady == true && self?.onboardReservation == onboardPermit
                     }) {continuation.resume(with:$0)}
                 }
                 // Even a revoked operation reads back an already-issued frame.
@@ -283,6 +283,14 @@ final class DeviceStore: ObservableObject {
             else {reason = .transport}
             throw SmartLightingApplyError(reason,lastReadback:observed)
         }
+    }
+    @MainActor func readSmartFirmware(connection: UUID, permit: UUID) async throws -> String {
+        guard onboardAvailable(connection: connection, permit: permit) else { throw AU05ShortcutError.disconnected }
+        let reply: DeviceReply = try await withCheckedThrowingContinuation { continuation in
+            session.read(.version) { continuation.resume(with: $0) }
+        }
+        guard onboardAvailable(connection: connection, permit: permit) else { throw AU05ShortcutError.disconnected }
+        var value = DeviceSnapshot(); guard value.apply(reply), let firmware = value.firmware else { throw AU05ShortcutError.invalidReply }; return firmware
     }
     func beginOnboardOperation(connection: UUID) throws -> UUID {
         guard connectionID == connection, isReady else { throw AU05ShortcutError.disconnected }

@@ -11,6 +11,7 @@ struct WorkflowEditorView: View {
     var radialEnabled = false
     var radialTriggerID = "key.1"
     var radialUsesHold = false
+    var scrollSettingsInShortcuts = false
     @State private var scopeError: String?
 
     var body: some View {
@@ -255,7 +256,7 @@ struct WorkflowEditorView: View {
     }
     private func editor(_ selected: WorkflowBinding) -> some View {
         BindingEditor(binding: binding(for: selected), running: store.running, triggerLocked: triggerID != nil, triggerPaused: triggerPauseMessage != nil,
-                      deviceShortcutFallback: detailed,
+                      deviceShortcutFallback: detailed, scrollSettingsInShortcuts: scrollSettingsInShortcuts,
                       test: { if let current = store.bindings.first(where: { $0.id == selected.id }) { store.run(current) } },
                       remove: { store.remove(selected.id) })
             .id(selected.id)
@@ -289,6 +290,7 @@ private struct BindingEditor: View {
     var triggerLocked = false
     var triggerPaused = false
     var deviceShortcutFallback = false
+    var scrollSettingsInShortcuts = false
     let test: () -> Void
     let remove: () -> Void
     @State private var contextError: String?
@@ -326,7 +328,8 @@ private struct BindingEditor: View {
                         StepEditor(step: stepBinding(for: step), ordinal: index + 1,
                                    canMoveUp: index > 0, canMoveDown: index < binding.steps.count - 1,
                                    moveUp: { moveStep(step.id, by: -1) }, moveDown: { moveStep(step.id, by: 1) },
-                                   remove: { binding.steps.removeAll { $0.id == step.id } })
+                                   remove: { binding.steps.removeAll { $0.id == step.id } },
+                                   scrollSettingsInShortcuts: scrollSettingsInShortcuts && ["knob.left", "knob.right"].contains(binding.triggerID) && binding.steps.count == 1)
                         if index < binding.steps.count - 1 { Divider() }
                     }
                 } }
@@ -437,6 +440,7 @@ struct StepEditor: View {
     let remove: () -> Void
     var radialAction = false
     var simple = false
+    var scrollSettingsInShortcuts = false
     @State private var delayText = ""
 
     var body: some View {
@@ -513,18 +517,12 @@ struct StepEditor: View {
                 }.font(VIFLOWTheme.caption)
             }
         case .scrollUp, .scrollDown:
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text("每转一格滚动").font(VIFLOWTheme.body)
-                    Spacer()
-                    Stepper("\(step.scrollLines) 行", value: $step.scrollLines, in: AU05ActionDefaults.scrollRange)
-                        .fixedSize().accessibilityIdentifier("vibekey.scroll.lines")
-                }
-                Slider(value: Binding(get: { Double(step.scrollLines) }, set: { step.scrollLines = Int($0.rounded()) }), in: 1...50, step: 1)
-                    .accessibilityLabel("每格滚动行数").accessibilityIdentifier("vibekey.scroll.amount")
-                Text("范围1–50行，实际距离由当前应用决定；轮盘内仍逐项选择。")
+            if scrollSettingsInShortcuts {
+                Text("每格 \(step.scrollLines) 行；请在“快捷键”中调整滚动行数。")
                     .font(VIFLOWTheme.caption).foregroundColor(VIFLOWTheme.secondary)
-            }
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("vibekey.scroll.shortcut-location")
+            } else { ScrollAmountControl(lines: $step.scrollLines, perDetent: simple) }
         case .openApp:
             VStack(alignment: .leading, spacing: 8) {
                 if simple {

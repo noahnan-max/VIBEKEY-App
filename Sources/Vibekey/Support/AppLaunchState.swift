@@ -19,6 +19,7 @@ import Carbon
     func revealMainWindow() { background = false }
     func hideInitialWindows() {
         guard background else { return }
-        NSApp.windows.filter { $0.identifier?.rawValue == "vibekey.main" }.forEach { $0.orderOut(nil) }
+        NSApp.windows.filter { ["vibekey.main", "vibekey.smart-configuration"].contains($0.identifier?.rawValue ?? "") }
+            .forEach { $0.orderOut(nil) }
     }
 }

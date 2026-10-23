@@ -1,0 +1,22 @@
+{
+  "activation" : "knobPress",
+  "enabled" : false,
+  "items" : [
+    {
+      "id" : "60FE22E1-08B1-45F8-A252-3168A62452A1",
+      "name" : "Synthetic old action",
+      "steps" : [
+        {
+          "argument" : "",
+          "id" : "D82ED503-7974-4104-928A-333B8158BAB6",
+          "keyCode" : 8,
+          "kind" : "shortcut",
+          "modifiers" : 1048576,
+          "scrollLines" : 3,
+          "seconds" : 0.25
+        }
+      ]
+    }
+  ],
+  "schemaVersion" : 3
+}

@@ -11,9 +11,10 @@ import UserNotifications
     @StateObject private var updates=VibekeyRuntime.shared.updates
     @StateObject private var settings=VibekeyRuntime.shared.settings
     @StateObject private var device=VibekeyRuntime.shared.device
+    @StateObject private var smartAU05=VibekeyRuntime.shared.smartAU05
     var body:some Scene {
         WindowGroup("VIBEKEY",id:"main") {
-            workspace.disabled(settings.suspended)
+            workspace.disabled(settings.suspended || smartAU05.applying)
                 .background(MainWindowMarker().frame(width:0,height:0).allowsHitTesting(false))
                 .background(MainWindowActions {delegate.reopenMain=$0}.frame(width:0,height:0).allowsHitTesting(false))
                 .onAppear {
@@ -26,10 +27,17 @@ import UserNotifications
                 CommandGroup(replacing:.newItem) {}
                 CommandGroup(after:.appInfo) { Button("检查更新…") {SettingsPresentation.show();updates.checkNow()}.disabled(!updates.canCheck) }
                 CommandMenu("设备") {
+                    SmartConfigurationCommandButton()
+                    Divider()
                     Button("刷新设备状态") {runtime.device.refresh()}.keyboardShortcut("r",modifiers:.command).disabled(settings.suspended)
                     Button("取消当前宏") {runtime.workflows.cancel();runtime.radial.cancel()}
                 }
             }
+        Window("智能配置 · VIBEKEY", id: "smart-configuration") {
+            AU05SmartConfigurationView(store: smartAU05).disabled(settings.suspended)
+                .background(MainWindowMarker(identifier: "vibekey.smart-configuration").frame(width: 0, height: 0).allowsHitTesting(false))
+                .onAppear { runtime.launch.hideInitialWindows() }
+        }.defaultSize(width: 820, height: 800)
         Settings {HardwareSettingsView(settings:settings,updates:updates).disabled(settings.suspended)}
         MenuBarExtra {
             Group {
@@ -38,7 +46,7 @@ import UserNotifications
             Text(device.snapshot.batteryPercent.map { "设备电量 \($0)%" + (device.batteryIsFresh(at: Date()) ? "" : " · 非实时") } ?? "电量未读取")
             }
             if let warning = device.batteryWarning(at: Date()) { Text(warning.message) }
-            Button("打开我的设备") {delegate.showMain()}
+            Button("打开 VIBEKEY") {delegate.showMain()}
             Divider()
             Button("取消当前宏") {runtime.workflows.cancel();runtime.radial.cancel()}
             Button(updates.hasUpdateBadge ? "App 设置… · 有新版本" : "设置…") {SettingsPresentation.show()}
@@ -53,7 +61,7 @@ import UserNotifications
         .menuBarExtraStyle(.menu)
     }
     private var workspace:some View {
-        VibekeyWorkspace(device:runtime.device,workflows:runtime.workflows,settings:runtime.settings,radialStore:runtime.radialStore,radial:runtime.radial,lighting:runtime.lighting,agentSignals:runtime.agentSignals,onboard:runtime.onboard,batteryNotifications:runtime.batteryNotifications,updateAvailable:updates.hasUpdateBadge)
+        VibekeyWorkspace(device:runtime.device,workflows:runtime.workflows,settings:runtime.settings,radialStore:runtime.radialStore,radial:runtime.radial,lighting:runtime.lighting,agentSignals:runtime.agentSignals,onboard:runtime.onboard,batteryNotifications:runtime.batteryNotifications,updateAvailable:updates.hasUpdateBadge,usage:runtime.usage)
     }
 }
 
@@ -72,6 +80,9 @@ import UserNotifications
     let lighting:SmartLightingController
     let agentSignals:AgentSignalStore
     let onboard:AU05OnboardStore
+    let smartModel:SmartConfigurationStore
+    let smartAU05:AU05SmartConfigurationStore
+    let usage:UsageStatisticsStore
     let batteryNotifications:BatteryNotificationController?
     private init() {
         probe=CommandLine.arguments.contains("--ui-probe")
@@ -82,6 +93,7 @@ import UserNotifications
             directory=argument
         } else {directory=VibekeyPaths.applicationSupport}
         ownership=Self.acquire(directory:directory,probe:probe)
+        usage=UsageStatisticsStore(directory:directory.appendingPathComponent("UsageStatistics",isDirectory:true),permitsObservation:!probe)
         let device=DeviceStore();self.device=device
         batteryNotifications=probe ? nil:BatteryNotificationController(center:.current(),isCurrent:{ alert in
             device.batteryIsFresh(at:Date()) && device.batteryWarning(at:Date()) == alert.warning && device.lastBatteryAlert == alert
@@ -92,6 +104,8 @@ import UserNotifications
         lighting=SmartLightingController(adapter:.init(read:{id in try await device.readLighting(connection:id)},apply:{request,permit in try await device.applyLighting(request,permit:permit)}), preferences:probe ? nil:.standard)
         agentSignals=AgentSignalStore(directory:probe ? directory.appendingPathComponent("AgentSignals",isDirectory:true):nil, desktopReader:probe ? nil:CodexDesktopStatusReader())
         onboard=AU05OnboardStore(device:device,directory:directory,preferences:probe ? nil:.standard)
+        smartModel=SmartConfigurationStore(directory:directory.appendingPathComponent("SmartConfiguration",isDirectory:true))
+        smartAU05=AU05SmartConfigurationStore(model:smartModel,device:device,onboard:onboard,workflows:workflows,lighting:lighting,radial:radialStore,directory:directory)
     }
     private static func acquire(directory:URL,probe:Bool)->RuntimeOwnership.Lease {
         do {
@@ -179,6 +193,7 @@ import UserNotifications
         device.onControlLoss={[weak self] in self?.resetInputs()}
         installLighting(runtime)
         if !runtime.probe {
+            runtime.usage.start()
             radial.startObservingWorkspace()
             interaction.start {[weak self] in self?.writeStatus()}
             runtime.onboard.start();device.start()
@@ -204,13 +219,18 @@ import UserNotifications
             statusTimer=timer;RunLoop.main.add(timer,forMode:.common)
             writeStatus()
             if !runtime.launch.background {NSApp.activate(ignoringOtherApps:true)}
-        } else {Task {await VibekeyUIProbe.run(runtime:runtime)}}
+        } else {Task {
+            if CommandLine.arguments.contains("--usage-probe") {await UsageStatisticsUIProbe.run(runtime:runtime)}
+            else {await VibekeyUIProbe.run(runtime:runtime)}
+        }}
     }
     private func forward(_ id:String,pressed:Bool,physicalFlagsOverride:UInt64? = nil) {
-        guard let runtime,!preparingExit,!runtime.probe else {return}
-        let context=NSWorkspace.shared.frontmostApplication?.bundleIdentifier ?? ""
+        guard let runtime,!preparingExit,!runtime.probe,!runtime.device.editing else {return}
+        let front=NSWorkspace.shared.frontmostApplication
+        let context=front?.bundleIdentifier ?? ""
         let binding=runtime.workflows.customBinding(for:id,applicationBundleID:context)
-        switch router.route(id,pressed:pressed,customBinding:binding?.id) {
+        let route=router.route(id,pressed:pressed,customBinding:binding?.id)
+        switch route {
         case .original:originals.handleOnboard(id,pressed:pressed,configuration:runtime.onboard.configuration(for:id),physicalFlagsOverride:physicalFlagsOverride)
         case .custom(let identifier):if let binding,binding.id==identifier {
             if binding.steps.count == 1, let step = binding.steps.first, step.kind == .scrollUp || step.kind == .scrollDown {
@@ -218,6 +238,11 @@ import UserNotifications
             } else {runtime.workflows.run(binding)}
         }
         case .consumed:break
+        }
+        if runtime.settings.accessibilityGranted {
+            if case .consumed = route {
+                if !pressed { runtime.usage.handle(id,pressed:false,pid:front?.processIdentifier ?? 0) }
+            } else { runtime.usage.handle(id,pressed:pressed,pid:front?.processIdentifier ?? 0) }
         }
     }
     private func resetInputs() {runtime?.radial.cancel(reason:.ownershipChanged);router.reset();originals.releaseAll();runtime?.workflows.cancel()}
@@ -344,24 +369,27 @@ import UserNotifications
         if runtime.probe {return .terminateNow}
         if exitPrepared {writeStatus();return .terminateNow}
         guard !preparingExit else {return .terminateCancel}
+        guard !runtime.smartAU05.recoveryRequired else {runtime.device.error="AU05 智能配置尚未确认，请先在智能配置窗口处理备份。";showMain();return .terminateCancel}
         guard !runtime.onboard.recoveryRequired else {runtime.device.error="设备配置尚未恢复，请先处理设备备份。";showMain();return .terminateCancel}
         NSApp.windows.filter{$0.identifier?.rawValue == "vibekey.main"}.forEach{_ = $0.makeFirstResponder(nil)}
-        preparingExit=true;runtime.settings.suspended=true;resetInputs();writeStatus()
+        preparingExit=true;runtime.settings.suspended=true;runtime.usage.stop();runtime.smartModel.cancel();resetInputs();writeStatus()
         runtime.lighting.setDevicePriority(true)
         Task { if await finishPreparingExit(runtime) { NSApp.terminate(nil) } }
         return .terminateCancel
     }
     private func prepareForUpdate() async -> Bool {
-        guard let runtime, !preparingExit, !runtime.onboard.recoveryRequired else { return false }
+        guard let runtime, !preparingExit, !runtime.onboard.recoveryRequired, !runtime.smartAU05.recoveryRequired else { return false }
         NSApp.windows.filter { $0.identifier?.rawValue == "vibekey.main" }.forEach { _ = $0.makeFirstResponder(nil) }
-        preparingExit = true; runtime.settings.suspended = true; resetInputs(); writeStatus()
+        preparingExit = true; runtime.settings.suspended = true; runtime.usage.stop(); runtime.smartModel.cancel(); resetInputs(); writeStatus()
         runtime.lighting.setDevicePriority(true)
         return await finishPreparingExit(runtime)
     }
     private func finishPreparingExit(_ runtime: VibekeyRuntime) async -> Bool {
+        guard await runtime.smartAU05.finishForExit() else { cancelExit("AU05 智能配置尚未确认，请先处理原配置备份。"); return false }
         guard await runtime.onboard.flush() else { cancelExit("设备快捷键尚未自动保存，请处理后再退出。"); return false }
         guard await runtime.device.flushAutomaticChanges() else { cancelExit("设备配置尚未处理完，请稍后重试退出。"); return false }
         guard runtime.workflows.flushAutomaticSave(), runtime.radialStore.flushAutomaticSave() else { cancelExit("快捷键或轮盘设置尚未自动保存，请处理后再退出。"); return false }
+        await runtime.usage.flush()
         await runtime.workflows.shutdown(); await runtime.radial.prepareForExit()
         runtime.lighting.setDevicePriority(false)
         let restored = await runtime.lighting.stopAndRestore(preserveEnabledIntent: true)
@@ -374,8 +402,19 @@ import UserNotifications
     }
 
     private func cancelExit(_ message:String) {
-        runtime?.device.error=message;preparingExit=false;runtime?.settings.suspended=false;runtime?.lighting.setDevicePriority(false);writeStatus();showMain()
+        runtime?.device.error=message;preparingExit=false;runtime?.settings.suspended=false;runtime?.usage.start();runtime?.lighting.setDevicePriority(false);writeStatus();showMain()
     }
     func applicationWillTerminate(_ notification:Notification) {interaction.stop();statusTimer?.invalidate();if let notificationPermissionObserver {NotificationCenter.default.removeObserver(notificationPermissionObserver)};if let closingObserver {NotificationCenter.default.removeObserver(closingObserver)};runtime?.radial.shutdown();runtime?.agentSignals.stop()}
     func applicationShouldTerminateAfterLastWindowClosed(_ sender:NSApplication)->Bool {false}
+}
+
+@MainActor private struct SmartConfigurationCommandButton: View {
+    @Environment(\.openWindow) private var openWindow
+    var body: some View {
+        Button("智能配置…") {
+            VibekeyRuntime.shared.launch.revealMainWindow()
+            openWindow(id: "smart-configuration")
+            NSApp.activate(ignoringOtherApps: true)
+        }.keyboardShortcut("i", modifiers: [.option, .command])
+    }
 }

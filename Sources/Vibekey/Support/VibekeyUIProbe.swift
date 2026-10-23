@@ -6,6 +6,10 @@ import VibekeyCore
 @MainActor enum VibekeyUIProbe {
     static func run(runtime: VibekeyRuntime) async {
         guard runtime.probe else { return }
+        if CommandLine.arguments.contains("--au05-smart-probe") {
+            await AU05SmartUIProbe.run(runtime: runtime)
+            return
+        }
         let directory = runtime.directory
         var receipt: [String: Any] = ["product": "hardware-controller", "deviceWrites": 0, "microphoneStarted": false, "cloudRequests": 0, "hostActionsExecuted": 0]
         do {
@@ -22,7 +26,7 @@ import VibekeyCore
             func workspace(_ section: AU05ConfigurationSection = .keys, destination: VibekeyDestination = .devices, native: Bool = true) -> VibekeyWorkspace {
                 VibekeyWorkspace(device: runtime.device, workflows: runtime.workflows, settings: runtime.settings,
                     radialStore: runtime.radialStore, radial: runtime.radial, lighting: runtime.lighting, agentSignals: runtime.agentSignals,
-                    onboard: native ? runtime.onboard:nil, initialDestination: destination, initialAU05Section: section)
+                    onboard: native ? runtime.onboard:nil, initialDestination: destination, initialAU05Section: section, usage: runtime.usage)
             }
             for appearance: NSAppearance.Name in [.aqua, .darkAqua] {
                 let label = appearance == .aqua ? "light" : "dark"
@@ -64,7 +68,7 @@ import VibekeyCore
             }
             runtime.workflows.bindings = original
             receipt["AU05Sidebar"] = AU05ConfigurationSection.allCases.map(\.rawValue)
-            receipt["launchDestination"] = "AU05 keys; AU05-only sidebar"
+            receipt["launchDestination"] = "Explicit AU05 key editor fixture; normal home is usage statistics"
             receipt["deviceGalleryRemoved"] = true; receipt["nestedSectionTabsRemoved"] = true; receipt["scrollRange"] = "1...50"; receipt["radialActivationModes"] = RadialActivation.allCases.count
             receipt["deviceArtworkLoaded"] = DeviceProductArtwork.au05Image != nil
             receipt["deviceArtworkResource"] = "Devices/au05-3d.png"

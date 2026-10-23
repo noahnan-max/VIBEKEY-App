@@ -129,18 +129,18 @@ public struct SmartLightingWriteRequest: Sendable {
     public var frames: [Data] { steps.map(\.frame) }
 
     public init(expected: SmartLightingSnapshot, target: SmartLightingSnapshot,
-                purpose: Purpose, operationID: UUID = UUID()) throws {
+                purpose: Purpose, operationID: UUID = UUID(), force: Bool = false) throws {
         guard expected.connectionID == target.connectionID else { throw SmartLightingFailure.connectionChanged }
         guard expected.workRecords == target.workRecords else { throw SmartLightingFailure.invalidIntent }
         self.expected = expected; self.target = target; self.purpose = purpose; self.operationID = operationID
         var current = expected, result: [SmartLightingWriteStep] = []
         func modeStep() throws {
-            guard current.mode != target.mode else { return }
+            guard force || current.mode != target.mode else { return }
             let next = try current.applying(.init(mode: target.mode))
             result.append(.init(frame: try DeviceControls.lightMode(target.mode.rawValue), expected: current, target: next)); current = next
         }
         func brightnessStep() throws {
-            guard current.brightness != target.brightness else { return }
+            guard force || current.brightness != target.brightness else { return }
             let next = try current.applying(.init(mode: current.mode, brightness: target.brightness))
             result.append(.init(frame: try DeviceControls.lightBrightness(target.brightness), expected: current, target: next)); current = next
         }

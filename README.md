@@ -15,7 +15,9 @@ VIBEKEY turns the AU05's three keys and rotary knob into a small, configurable w
 
 The app is written in **SwiftUI and AppKit**, with direct IOKit HID communication and local configuration storage. Core features need no online account, subscription, API key, or cloud backend.
 
-This repository contains the **AU05-only, open-source hardware controller**. Current source and the [published binary](https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.1) are **0.16.1**, with first-use daily presets. The official Apple-silicon download is Developer ID signed, notarized and stapled. The interface is currently in Simplified Chinese; both English and Chinese documentation are provided. Speech recognition, dictation, language models and an input-method engine are outside this version's scope.
+This repository contains the **AU05-only, open-source edition**, with source version **0.21.1**. It adds an opt-in usage dashboard and reviewable AI configuration while preserving hardware shortcuts, daily presets and the existing signed-update channel. Official Apple-silicon downloads are listed under [Releases](https://github.com/noahnan-max/VIBEKEY-App/releases); distribution builds undergo separate Developer ID signing and Apple notarization. The interface is in Simplified Chinese, with English and Chinese documentation.
+
+VIBEKEY does not include a speech-recognition or input-method engine. Statistics observe your existing input flow locally after consent. Optional AI configuration uses your own compatible model service or installed Codex CLI login; no account or API credential is supplied.
 
 ## See the app
 
@@ -36,6 +38,8 @@ This repository contains the **AU05-only, open-source hardware controller**. Cur
 
 | Capability | What it does |
 | --- | --- |
+| Usage home | Live cumulative received characters, observed/estimated sources, activity grid and streaks. Explicit local opt-in; no audio capture or statistics upload. |
+| AU05 intelligent configuration | Describe shortcuts, bounded Mac macros and ordinary lighting. Review the plan, then explicitly back up/apply with complete readback and recovery. Uses your own model access. |
 | Six physical controls | Configure the upper, middle and lower keys, knob press, and left/right rotation from a visual device map. |
 | Device shortcuts | Read and edit the AU05's supported shortcut fields, with validation, private backups, write/readback checks and recovery handling. |
 | Mac workflows | Chain keyboard shortcuts, app launches, web pages, macOS Shortcuts, input-source selection, waits, scrolling and volume controls. |
@@ -63,6 +67,20 @@ This repository contains the **AU05-only, open-source hardware controller**. Cur
 Actions run with your Mac user's permissions and act on the current application. Check the target application's own shortcuts before enabling an example. A preset describes a mapping; it does not prove that every version or keyboard layout will interpret it identically.
 
 The initial daily preset uses left Control, Return, Backspace, knob-press radial activation and adjustable scrolling (19 lines up, 18 down). The two-page radial menu includes editing, window, full-screen, mute and screenshot actions. See [the complete preset](docs/PRESETS.md). First use still requires connecting the device and granting Accessibility for computer-side actions; merely loading the preset does not write device firmware or execute a workflow.
+
+## Usage dashboard and intelligent configuration
+
+The usage home keeps observed characters and microphone-duration estimates distinct. It counts received input as it appears; later deletions do not subtract it. Pausing keeps history. Inaccessible fields, silence, rapid submission and simultaneous manual edits can affect coverage, so the dashboard makes no universal exact-dictation or productivity claim. [Counting, consent and storage](docs/USAGE_STATISTICS.md).
+
+Intelligent configuration opens from the AU05 page or Device menu. Choose a function-calling compatible API or optional existing Codex CLI login, then describe the requested change. The model sees only the explicit request and allowlisted AU05 state. Previewing never writes; confirmation starts a durable backup and verified transaction. Settings saved, model call verified and device configuration applied are separate results. [Model access, supported actions and recovery](docs/SMART_CONFIGURATION.md).
+
+The knob's standalone scroll amount is edited in shortcut settings; multi-step macros retain their individual scroll amounts. Existing presets and saved mappings are preserved.
+
+![Usage home with synthetic history](docs/images/usage-light.png)
+
+![AU05 configuration preview with a synthetic model response](docs/images/smart-light.png)
+
+*These native screenshots use isolated, synthetic history and a loopback model fixture. They show layout and preview behavior, not personal usage, a live model account or physical device execution.*
 
 ## Device settings and Mac behavior
 
@@ -95,7 +113,7 @@ open dist/VIBEKEY.app
 
 The first build downloads the pinned official Sparkle 2.10.0 distribution and verifies its SHA-256. The script builds the core, diagnostic executable and GUI, creates an actual `.app` bundle, and verifies its local development signature. It does not install a driver, download a model, install Agent hooks, or replace an App in `/Applications`.
 
-The build script's default signature is **ad hoc for local development**; its output is not automatically notarized. The official 0.16.1 download separately completed Developer ID signing, Apple notarization and stapling. Rebuilding an ad-hoc-signed application can require renewed Accessibility approval. To use an identity already configured on your own Mac:
+The build script's default signature is **ad hoc for local development**; its output is not automatically notarized. Official downloads follow a separate Developer ID signing, Apple notarization and stapling process. Rebuilding an ad-hoc-signed application can require renewed Accessibility approval. To use an identity already configured on your own Mac:
 
 ```sh
 VIBEKEY_SIGNING_IDENTITY="Your existing signing identity" ./script/build_and_run.sh --build-only
@@ -139,7 +157,7 @@ The first upgrade from 0.15.3 requires installing 0.16.0 once, because the earli
 
 Configuration lives in `~/Library/Application Support/Vibekey/`; macOS preferences use the App's bundle identifier. Workflows may contain your URLs, app choices and shortcut names, so treat that directory as personal data.
 
-This source distribution contains no user configuration, conversation history, recordings, API credentials, signing keys, private hardware backups, retired speech components or manufacturer application packages. There is no bundled analytics SDK or required online service. A workflow can open a web page or call software you selected; those actions have their own network behavior.
+This source distribution contains no user configuration, conversation history, recordings, API credentials, signing keys, private hardware backups, retired speech components or manufacturer application packages. There is no bundled analytics SDK or required online service for hardware control. Opt-in statistics keep only local aggregates, with bounded raw text in memory and no network transmission. Optional model requests go to your selected provider and contain your description plus allowlisted AU05 state; keys stay in the public App’s own endpoint-isolated Keychain selectors. No private development settings or credentials are imported. A workflow can open a web page or call software you selected; those actions have their own network behavior.
 
 Do not include raw device backups, Agent transcripts, or the whole configuration folder in a public bug report. See [SECURITY.md](SECURITY.md).
 
@@ -149,7 +167,7 @@ Do not include raw device backups, Agent transcripts, or the whole configuration
 ./script/run_tests.sh
 ```
 
-This runs the existing isolated hardware/core suites, battery checks, Codex metadata fixtures and Python Agent bridge tests. Tests use in-memory or owned example data; the runner does not write to physical hardware, post system input or install hooks. Additional XCTest cases are available through `swift test` on a full compatible Xcode/SwiftPM toolchain.
+This runs the isolated hardware/core suites, statistics and consent/history checks, AU05 planning/transaction checks, credential-cache fixtures, released-configuration preservation checks, login checks, battery checks, Codex metadata fixtures and Python Agent bridge tests. Tests use in-memory or owned example data; the runner does not write to physical hardware, post system input or install hooks. Additional XCTest cases are available through `swift test` on a full compatible Xcode/SwiftPM toolchain.
 
 The initial publication's exact checks and remaining gaps are recorded in [Verification](docs/VERIFICATION.md). A successful build or mock-transport test does not certify every firmware, connection, application shortcut or physical lighting effect. Hardware testing, broader application compatibility, genuine approval-state lighting and low-battery physical triggering require separate acceptance.
 

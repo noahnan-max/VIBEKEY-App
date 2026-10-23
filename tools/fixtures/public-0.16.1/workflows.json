@@ -1,0 +1,22 @@
+{
+  "bindings" : [
+    {
+      "applicationBundleID" : "",
+      "id" : "7526FDBD-0C98-49F5-B0BE-5E215D4C6E7A",
+      "name" : "Synthetic old public profile",
+      "steps" : [
+        {
+          "argument" : "",
+          "id" : "D82ED503-7974-4104-928A-333B8158BAB6",
+          "keyCode" : 8,
+          "kind" : "shortcut",
+          "modifiers" : 1048576,
+          "scrollLines" : 3,
+          "seconds" : 0.25
+        }
+      ],
+      "triggerID" : "key.0"
+    }
+  ],
+  "schemaVersion" : 1
+}

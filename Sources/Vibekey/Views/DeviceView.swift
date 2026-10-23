@@ -30,6 +30,7 @@ enum AU05KeyEditor: String, CaseIterable, Identifiable {
 }
 
 struct DeviceView: View {
+    @Environment(\.openWindow) private var openWindow
     @ObservedObject var device: DeviceStore
     @ObservedObject var workflows: WorkflowStore
     @ObservedObject var radialStore: RadialMenuStore
@@ -140,6 +141,10 @@ struct DeviceView: View {
             }
             Spacer(minLength: 12)
             HStack(spacing: 12) {
+                Button {
+                    openWindow(id:"smart-configuration")
+                } label: { Label("智能配置", systemImage:"sparkles") }
+                    .accessibilityIdentifier("vibekey.au05.smart-configuration")
                 HStack(spacing: 6) {
                     Circle().fill(device.isReady ? VIFLOWTheme.accent : VIFLOWTheme.secondary).frame(width: 6, height: 6)
                     Text(device.connectionLabel).font(VIFLOWTheme.caption)
@@ -171,6 +176,7 @@ struct DeviceView: View {
                         }.pickerStyle(.segmented).accessibilityIdentifier("vibekey.device.key-editor")
                         if keyEditor == .shortcut {
                             AU05OnboardEditorView(store: onboard, triggerID: selectedTriggerID)
+                            knobScrollSettings
                             if hasMacWorkflow {
                                 HStack(alignment: .top, spacing: 10) {
                                     Text(workflows.enabled ? "此键还有已启用的 Mac 工作流，会按应用范围优先执行。" : "此键已配置 Mac 工作流，目前未启用。")
@@ -188,7 +194,7 @@ struct DeviceView: View {
                                 .accessibilityIdentifier("vibekey.device.workflow-storage")
                             WorkflowEditorView(store: workflows, device: device, triggerID: selectedTriggerID, detailed: true,
                                 radialEnabled: radialEnabled, radialTriggerID: radialStore.configuration.activation.triggerID,
-                                radialUsesHold: radialStore.configuration.activation.requiresHold)
+                                radialUsesHold: radialStore.configuration.activation.requiresHold, scrollSettingsInShortcuts: true)
                         }
                     } else { enhancedKeyEditor }
                 }.padding(.trailing, 4)
@@ -198,7 +204,39 @@ struct DeviceView: View {
         }
     }
     private var hasMacWorkflow: Bool {
-        workflows.activeBindings.contains { $0.triggerID == selectedTriggerID && $0.steps.contains { $0.kind != .passthrough } }
+        workflows.activeBindings.contains { $0.triggerID == selectedTriggerID && $0.steps.contains { $0.kind != .passthrough } && !isKnobScrollShortcut($0) }
+    }
+    private func isKnobScrollShortcut(_ binding: WorkflowBinding) -> Bool {
+        ["knob.left", "knob.right"].contains(binding.triggerID) && binding.steps.count == 1 &&
+            [.scrollUp, .scrollDown].contains(binding.steps[0].kind)
+    }
+    @ViewBuilder private var knobScrollSettings: some View {
+        ForEach($workflows.bindings) { $binding in
+            if binding.triggerID == selectedTriggerID, isKnobScrollShortcut(binding) {
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack {
+                        Text("旋钮滚动").font(VIFLOWTheme.subheading)
+                        Spacer()
+                        Text(workflows.automaticSaveMessage).font(VIFLOWTheme.caption).foregroundColor(VIFLOWTheme.secondary)
+                    }
+                    Text(binding.steps[0].kind.title + " · " + (binding.applicationBundleID.isEmpty ? "所有应用" : binding.applicationBundleID))
+                        .font(VIFLOWTheme.caption).foregroundColor(VIFLOWTheme.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    ScrollAmountControl(lines: $binding.steps[0].scrollLines)
+                    Text(workflows.enabled ? "行数保存在这台 Mac，VIBEKEY 运行时生效；退出后使用设备原生滚动。" : "Mac 自定义配置尚未启用，当前使用设备原生滚动。")
+                        .font(VIFLOWTheme.caption).foregroundColor(VIFLOWTheme.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let error = workflows.automaticSaveError {
+                        Text(error).font(VIFLOWTheme.caption).foregroundColor(VIFLOWTheme.errorInk)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button("重试自动保存") { workflows.flushAutomaticSave() }
+                    }
+                }
+                .viflowPanel(padding: 18).disabled(workflows.running || workflows.smartReserved)
+                .accessibilityIdentifier("vibekey.onboard.knob-scroll")
+                .onDisappear { workflows.flushAutomaticSave() }
+            }
+        }
     }
     @ViewBuilder private var enhancedKeyEditor: some View {
         if radialEnabled && selectedTriggerID == radialStore.configuration.activation.triggerID { triggerPreference }

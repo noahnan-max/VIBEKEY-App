@@ -7,6 +7,7 @@ import VibekeyCore
         didSet { if autosaveReady, bindings != oldValue { scheduleAutomaticSave() } }
     }
     @Published private(set) var activeBindings:[WorkflowBinding] = []
+    private(set) var smartReserved = false
     var hasUnsavedChanges:Bool {bindings != activeBindings}
     @Published var enabled:Bool {didSet {preferences?.set(enabled,forKey:"hardwareCustomActionsEnabled.v1")}}
     private let preferences:UserDefaults?
@@ -52,12 +53,31 @@ import VibekeyCore
     private func scheduleAutomaticSave() {
         automaticSaveError = nil
         automaticSavePending = hasUnsavedChanges
-        if automaticSavePending { autosaver.schedule() } else { autosaver.cancel() }
+        if automaticSavePending && !smartReserved { autosaver.schedule() } else { autosaver.cancel() }
     }
     @discardableResult func flushAutomaticSave() -> Bool {
         autosaver.cancel(); automaticSavePending = false
         guard hasUnsavedChanges else { return !loadFailed }
         return save()
+    }
+    func reserveSmartConfiguration() throws {
+        guard !smartReserved, !running, !loadFailed, !hasUnsavedChanges, !automaticSavePending else { throw AU05ShortcutError.busy }
+        guard try WorkflowPersistence.load(from: url) == activeBindings else { throw AU05ShortcutError.changed }
+        autosaver.cancel(); smartReserved = true
+    }
+    func endSmartConfiguration() { smartReserved = false; if hasUnsavedChanges { scheduleAutomaticSave() } }
+    func readSmartConfiguration() throws -> [WorkflowBinding] {
+        guard !loadFailed, !hasUnsavedChanges, try WorkflowPersistence.load(from: url) == activeBindings else { throw AU05ShortcutError.changed }
+        return activeBindings
+    }
+    func writeSmartConfiguration(expected: [WorkflowBinding], desired: [WorkflowBinding], expectedEnabled: Bool, desiredEnabled: Bool) throws {
+        guard smartReserved, enabled == expectedEnabled, try readSmartConfiguration() == expected else { throw AU05ShortcutError.changed }
+        if expected != desired {
+            try WorkflowPersistence.save(desired, to: url)
+            guard try WorkflowPersistence.load(from: url) == desired else { throw AU05ShortcutError.storage }
+            activeBindings = desired; bindings = desired; automaticSavePending = false; automaticSaveError = nil
+        }
+        enabled = desiredEnabled
     }
     func add() {
         let binding = WorkflowBinding(name: "新工作流", triggerID: "key.1", steps: [WorkflowStep(kind: .delay, seconds: 0.25)])
@@ -73,7 +93,7 @@ import VibekeyCore
     }
     @discardableResult func save(enableCustomActions: Bool = false) -> Bool {
         if autosaveReady { autosaver.cancel(); automaticSavePending = false }
-        guard !loadFailed else { return false }
+        guard !loadFailed, !smartReserved else { return false }
         do {
             try WorkflowPersistence.save(bindings,to:url)
             let saved=try WorkflowPersistence.load(from:url)
@@ -102,6 +122,7 @@ import VibekeyCore
         }
     }
     func run(_ binding: WorkflowBinding) {
+        guard !smartReserved else { return }
         guard !running else { onLog?("已有宏在运行，跳过重复按键"); return }
         if let message = binding.validationError { error = message; return }
         running = true; error = nil
