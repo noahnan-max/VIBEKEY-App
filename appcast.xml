@@ -3,31 +3,37 @@ IMPORTANT: This file was signed by Sparkle. Any modifications to this file requi
 --><rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0"><channel>
 <title>VIBEKEY AU05 updates</title><link>https://github.com/noahnan-max/VIBEKEY-App/releases</link>
 <description>Signed AU05 releases with user-confirmed installation.</description>
-<item><title>VIBEKEY 0.16.1</title>
-<link>https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.16.1</link>
-<pubDate>Wed, 21 Oct 2026 10:42:59 GMT</pubDate>
-<sparkle:version>1601</sparkle:version>
-<sparkle:shortVersionString>0.16.1</sparkle:shortVersionString>
+<item><title>VIBEKEY 0.21.1</title>
+<link>https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.21.1</link>
+<pubDate>Fri, 23 Oct 2026 03:35:55 GMT</pubDate>
+<sparkle:version>2101</sparkle:version>
+<sparkle:shortVersionString>0.21.1</sparkle:shortVersionString>
 <sparkle:minimumSystemVersion>13.3</sparkle:minimumSystemVersion>
 <sparkle:hardwareRequirements>arm64</sparkle:hardwareRequirements>
-<description sparkle:format="plain-text">VIBEKEY 0.16.1
+<description sparkle:format="plain-text">VIBEKEY 0.21.1
 
-主要更新
-• 首次使用自动加载完整日常操作预设：上键左 Control、中键 Return、下键 Backspace、旋钮单击轮盘、左右滚动。
-• 预设沿用已保存的滚动幅度：向上 19 行、向下 18 行，可在 App 中各自调整。
-• 轮盘默认准备 12 项动作，包含窗口总览、复制、粘贴、撤销、全选、重做、GitHub、全屏、静音和截图。
-• 已有用户配置及明确关闭的开关继续保留；读取失败的文件不会被预设覆盖。
-• 保留静默更新提示、登录启动设置和完整 AU05 3D 设备图。
+相对公开版 0.16.1 的主要更新
+• 新增使用统计首页：实时累计收录量、每日热力图、连续天数及观察/时长估算来源。后续删改不扣回，历史汇总保留。
+• 公开版首次由用户主动开启本机统计；不录音、不保存原文、不上传统计，随时可以关闭。
+• 新增 AU05 智能配置：用户自选兼容模型或本机 Codex 登录，先生成可审核方案，确认后才备份、写入并完整读回；支持本机备份恢复。
+• 修复 DeepSeek 工具调用兼容问题，复用本次运行内已授权的端点密钥，并区分设置已保存与模型调用已验证。
+• 将旋钮单步滚动行数放到快捷键设置中；多步骤宏继续保留各自的滚动设置。
+• 保留完整 AU05 3D 图、日常预设、原有配置、菜单栏运行、登录启动和静默更新；处理后台启动时晚到的窗口恢复。
 
-What's new
-• A complete first-use daily preset for all six AU05 controls.
-• Knob scrolling starts at 19 lines up and 18 lines down, matching the saved profile and remaining adjustable.
-• Twelve ready-to-use radial actions, opened with a knob press.
-• Existing configuration, explicit disabled choices and unreadable files are preserved.
-• Quiet updates, login-launch settings and complete AU05 3D artwork remain available.
+统计含明确标注的估算，不保证所有第三方输入法的逐字覆盖。智能配置需要用户自己的兼容服务或已有 Codex 登录，不提供账户或密钥。公开版不导入私人研发配置。
+
+Highlights since public version 0.16.1
+• Adds a usage home with live cumulative received characters, daily activity, streaks and separate observed/estimated sources. Later edits do not subtract received input; history is preserved.
+• Local statistics require explicit opt-in. No audio capture, raw-text storage or statistics upload; collection can be disabled at any time.
+• Adds AU05 intelligent configuration using a user-selected compatible model or existing local Codex CLI login. Preview first; only confirmation starts full backup, verified apply and optional restore.
+• Fixes DeepSeek tool-choice compatibility, reuses authorized endpoint credentials in process memory, and distinguishes saved settings from a verified model call.
+• Places standalone rotary scroll amount in shortcut settings while retaining per-step amounts in multi-step macros.
+• Preserves complete AU05 artwork, presets, existing configuration, menu-bar/login behavior and quiet updates, including late restored windows during background startup.
+
+Statistics include labeled estimates and do not guarantee exact coverage of every input method. Model access requires your own compatible service or existing Codex login. No private development settings, account or credential is imported.
 </description>
-<enclosure url="https://github.com/noahnan-max/VIBEKEY-App/releases/download/v0.16.1/VIBEKEY-0.16.1-AU05-arm64.zip" sparkle:edSignature="ih5ofExCO+hggHiepzmbFe1BimKkQ9IA9TnxhCpLo6OFvKLkpciLojjRJg0/iIlTVpVgld9IkD6N62X9TesRDQ==" length="3887324" type="application/octet-stream"></enclosure>
+<enclosure url="https://github.com/noahnan-max/VIBEKEY-App/releases/download/v0.21.1/VIBEKEY-0.21.1-AU05-arm64.zip" sparkle:edSignature="MRWezvQiAAhu07ywykA2XqKer99aiUQzn9qohs+2Md5DmWje1JoDydgzWLyoDaPnNe2XBaBryDWnZACO8uYHCA==" length="4601443" type="application/octet-stream"></enclosure>
 </item></channel></rss><!-- sparkle-signatures:
-edSignature: 0r1VvX/zINM+hBPI4zhcx55Zt6iJJI+IS2ioPrpyVX/n3ngvWHzLJW1p8qqR12LKpMFBnEVZzS0NxKmqz0A3Cw==
-length: 2380
+edSignature: qeXA+e6QLc9v1xE976LlaFzrcKZBGBbIijfOZsv+GLVUzq/9lOGUkdbJAC0gSFl6DPydhNvtFfwHwJWU+Zp1Bg==
+length: 3768
 -->

@@ -1,5 +1,21 @@
 # Verification / 验证记录
 
+## Official 0.21.1 distribution / 正式分发 · 2026-10-23
+
+The [v0.21.1 release](https://github.com/noahnan-max/VIBEKEY-App/releases/tag/v0.21.1) contains the Developer ID signed, Apple-notarized and stapled AU05 App, build **2101**. All six Mach-O components have hardened runtime and secure timestamps; Apple returned Accepted with zero warnings. The final ZIP was extracted independently and passed deep/strict signature, stapled-ticket and default Gatekeeper checks. Its96 regular App files match the Apple signing owner's exact handoff.
+
+- Runtime source commit: `7aa9328e9969f31515a987388e139899c5acbc88`; later feed/documentation commits do not rebuild that App.
+- Archive: `VIBEKEY-0.21.1-AU05-arm64.zip`, **4,601,443 bytes**.
+- Archive SHA-256: `6acc616b2b21c23155eb863fe43bd7a5e904eefa60b4046d4956e83f600fdacf`.
+- Signed feed SHA-256: `2a498b11e0709b15152eb953a6414a406e68194f4f6a09af3ab222ccb979663e`.
+- Anonymous actual downloads of the ZIP, checksum file and attached feed matched the prepared bytes. Archive and complete feed signatures were independently verified with the App's embedded public key only.
+- A genuinely anonymous fresh GitHub clone matched all189 frozen source files, cold-downloaded the pinned official dependency, built and passed all six feature suites and24 HTTP checks. The independent clean source export separately passed the complete default regression entry.
+
+Previous0.16.0/0.16.1 assets are retained. The superseded0.16.3 candidate was not released. Current target-Mac and in-place-update acceptance are separate from these source/distribution checks and are not inferred from a successful upload or notarization. Existing hardware/voice/model coverage limits below remain applicable.
+
+中文：0.21.1正式包已通过公司签名、Apple公证、票据和最终ZIP解压后的系统安全检查；真实匿名下载的三份文件与最终签名产物一致，归档和更新源均用公开密钥独立验签。保留旧正式版资产，未发布0.16.3。公开版统计先主动开启，模型使用自己的接入方式；实体新映射、所有语音输入法、其他模型和各台Mac的安装状态不由这些结果代替。
+
+
 ## 0.21.1 — statistics and AU05 intelligent configuration
 
 This source candidate integrates the authors' frozen 0.21.1 AU05 functionality into the existing public identity and update channel. It does not publish the private multi-device App. Public build: **2101**, macOS **13.3+**, Apple silicon. Source and local-development checks below are distinct from the signed distribution record, which is added after Apple processing and public readback.
